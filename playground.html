@@ -16,50 +16,91 @@
       margin: 0px;
       padding: 0px;
     }
-
-    #container {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-flow: row;
-      background: #fff;
-      gap: 4px;
-    }
-
-    #input {
-      background: #000;
-      color: #aaa;
-      overflow: scroll;
-      resize: none;
-    }
-
-    #ig {
-      background: #eee;
-    }
-
-    .fill {
-      width: 100%;
-      height: 100%;
-    }
   </style>
 </head>
 
 <body>
-  <split-panel id="container" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
-    <div slot=0 class="fill" style="display:flex;flex-direction: column;">
-      <textarea id="input" style="flex-basis:100px;flex-grow:1;"></textarea>
-      <div>
-        <label>自動更新<input id="auto_update" type="checkbox"></label>
-        <button id="run">RUN</button>
-      </div>
-    </div>
-    <div slot=1 class="fill">
-      <i-g id="ig" class="fill" slot=1></i-g>
-    </div>
-  </split-panel>
 
   <script type="module">
     import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
+
+    class PlayGroundApp extends LitElement {
+      static get properties(){
+        return {
+          store:{type:Object},
+        };
+      }
+      constructor(){
+        super();
+        this.store = {
+          config:{
+            layout:1,
+            refresh_wait:1000,
+            auto_refresh:false,
+          },
+          data:{
+            value:"",
+          }
+        };
+      }
+      static get styles(){
+        return css`
+          #container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-flow: row;
+            background: #fff;
+            gap: 4px;
+          }
+
+          #input {
+            background: #000;
+            color: #aaa;
+            overflow: scroll;
+            resize: none;
+          }
+
+          #ig {
+            background: #eee;
+          }
+
+          .fill {
+            width: 100%;
+            height: 100%;
+          }
+        `;
+      }
+      render(){
+        return html`
+          <split-panel id="container" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
+            <div slot=0 class="fill" style="display:flex;flex-direction: column;">
+              <textarea id="input" style="flex-basis:100px;flex-grow:1;" @input=${e=>{
+                clearTimeout(this.timer);
+                this.store.data.value = e.target.value;
+                this.timer = setTimeout(() => {
+                  if (this.store.config.auto_refresh) {
+                    this.requestUpdate();
+                  }
+                }, this.store.config.refresh_wait)
+              }}>${this.store.data.value}</textarea>
+              <div>
+                <label>自動更新<input type="checkbox" .checked=${this.store.config.auto_refresh} @input=${e=>this.store.config.auto_refresh = e.target.checked}></label>
+                <button id="run" @click=${e=>{
+                  this.requestUpdate();
+                }}>RUN</button>
+              </div>
+            </div>
+            <div slot=1 class="fill">
+              <i-g id="ig" class="fill" slot=1 .content=${this.store.data.value}></i-g>
+            </div>
+          </split-panel>
+        `;
+      }
+    }
+    customElements.define("playground-app", PlayGroundApp);
+    document.body.append(new PlayGroundApp());
+    
     class InputGround extends LitElement {
       static get properties() {
         return {
@@ -96,30 +137,6 @@
     }
     customElements.define("i-g", InputGround);
     
-    const findAll = q => [...document.querySelectorAll(q)].map(e => {
-      e.on = e.addEventListener;
-      return e;
-    });
-    const find = q => findAll(q)[0];
-
-    const ig = find("#ig");
-
-    const autoUpdate = find("#auto_update");
-    let timer;
-    const input = find("#input");
-    input.on('input', e => {
-      console.log(e.target.innerHTML);
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        if (autoUpdate.checked) {
-          ig.content = e.target.value;
-        }
-      }, 1000)
-    });
-
-    find("#run").on("click", e => {
-      ig.content = input.value;
-    });
 
     class Split extends LitElement {
       static get properties() {
