@@ -120,19 +120,21 @@
     }
     customElements.define("playground-app", PlayGroundApp);
     document.body.append(new PlayGroundApp());
-    
-    class InputGround extends LitElement {
-      static get properties() {
-        return {
-          content: { type: String },
-        };
-      }
+
+    class InputGround extends HTMLElement {
       constructor(){
         super();
-        this.content = "";
+        this.attachShadow({mode:"open"});
+        this.shadowRoot.innerHTML = `
+        <style>${this.constructor.style}</style>
+        <iframe id="iframe">
+        `;
       }
-      static get styles(){
-        return css`
+      set content(val){
+        this.shadowRoot.querySelector("#iframe").srcdoc = val;
+      }
+      static get style(){
+        return `
           :host{
             display:block;
           }
@@ -147,11 +149,6 @@
             width:100%;
             height:100%;
           }
-        `;
-      }
-      render(){
-        return html`
-        <iframe .srcdoc=${this.content}>
         `;
       }
     }
