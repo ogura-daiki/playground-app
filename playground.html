@@ -21,6 +21,80 @@
 
 <body>
 
+  <script>
+
+    const migrationsMap = {
+      "config": [
+        {
+          v: 0,
+          up: () => {
+            return {
+              layout:1,
+              refresh_wait:1000,
+              auto_refresh:false,
+            };
+          }
+        },
+      ],
+      "ctx": [
+        {
+          v: 0,
+          up: () =>{
+            return {
+              value:"",
+            }
+          }
+        }
+      ]
+    };
+
+    const store = {
+      get(key){
+        return JSON.parse(localStorage.getItem(key));
+      },
+      set(key, value){
+        return localStorage.setItem(key, JSON.stringify(value));
+      },
+    };
+
+    const getValue = key => {
+      const migrations = migrationsMap[key];
+      //現在のバージョンを取得
+      const version = store.get("version-" + key);
+      //実施する必要のあるmigrationを取得
+      let current = -1;
+      if (typeof version === "number") {
+        current = migrations.findIndex(m => m.v === version);
+        if (current === -1) throw new Error(`migration missing. current:${version}`);
+      }
+      const migrationList = migrations.slice(current + 1);
+
+      //保存されている内容を取得
+      let obj = store.get("store-" + key);
+
+      //実施すべきmigrationが無い場合は最新の状態になっているのでそのまま返す。
+      if (migrationList.length === 0) return obj;
+
+      //migrationを実施
+      const migrated = migrationList.reduce((obj, m) => m.up(obj), obj);
+
+      //一番最後のmigrationのバージョンを保存
+      const lastMigration = migrationList.pop();
+      store.set("version-" + key, lastMigration.v);
+      setValue(key, migrated);
+      return migrated;
+    }
+
+    const setValue = (key, obj) => {
+      store.set("store-" + key, obj);
+    }
+
+    window.Store = Object.freeze(Object.assign(Object.create(null), {
+      get:getValue, set:setValue,
+    }));
+
+  </script>
+
   <script type="module">
     import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
 
@@ -44,7 +118,8 @@
     class PlayGroundApp extends LitElement {
       static get properties(){
         return {
-          store:{type:Object},
+          config:{type:Object},
+          ctx:{type:Object},
         };
       }
       constructor(){
@@ -54,16 +129,8 @@
             this.renderRoot.querySelector("#ig").content = value;
           }
         });
-        this.store = {
-          config:{
-            layout:1,
-            refresh_wait:1000,
-            auto_refresh:false,
-          },
-          data:{
-            value:"",
-          }
-        };
+        this.config = Store.get("config");
+        this.ctx = Store.get("ctx");
       }
       static get styles(){
         return css`
@@ -98,24 +165,40 @@
           <split-panel id="container" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
             <div slot=0 class="fill" style="display:flex;flex-direction: column;">
               <textarea id="input" style="flex-basis:100px;flex-grow:1;" @input=${e=>{
-                this.store.data.value = e.target.value;
-                this.updater.push(this.store.config.refresh_wait, {
-                  value:e.target.value,
-                  auto_refresh:this.store.config.auto_refresh
+                this.updateCtx(ctx=>{
+                  ctx.value = e.target.value;
                 });
-              }}>${this.store.data.value}</textarea>
+                this.updater.push(this.config.refresh_wait, {
+                  value:e.target.value,
+                  auto_refresh:this.config.auto_refresh
+                });
+              }}>${this.ctx.value}</textarea>
               <div>
-                <label>自動反映<input type="checkbox" .checked=${this.store.config.auto_refresh} @input=${e=>this.store.config.auto_refresh = e.target.checked}></label>
+                <label>自動反映<input type="checkbox" .checked=${this.config.auto_refresh} @input=${e=>{
+                  this.updateConfig(config=>{
+                    config.auto_refresh = e.target.checked
+                  });
+                }}></label>
                 <button id="run" @click=${e=>{
-                  this.updater.force({value:this.store.data.value});
+                  this.updater.force({value:this.ctx.value});
                 }}>RUN</button>
               </div>
             </div>
             <div slot=1 class="fill">
-              <i-g id="ig" class="fill" slot=1 .content=${this.store.data.value}></i-g>
+              <i-g id="ig" class="fill" slot=1 .content=${this.ctx.value}></i-g>
             </div>
           </split-panel>
         `;
+      }
+
+      updateCtx(func){
+        func(this.ctx);
+        Store.set("ctx", this.ctx);
+      }
+
+      updateConfig(func){
+        func(this.config);
+        Store.set("config", this.config);
       }
     }
     customElements.define("playground-app", PlayGroundApp);
