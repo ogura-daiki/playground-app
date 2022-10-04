@@ -24,6 +24,23 @@
   <script type="module">
     import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
 
+    const debounce = func=>{
+      let timer;
+      return {
+        clear: () => {
+          clearTimeout(timer);
+        },
+        push(time, props) {
+          this.clear();
+          timer = setTimeout(()=>func(false, props), time);
+        },
+        force(props) {
+          this.clear();
+          func(true, props);
+        },
+      };
+    }
+
     class PlayGroundApp extends LitElement {
       static get properties(){
         return {
@@ -32,6 +49,11 @@
       }
       constructor(){
         super();
+        this.updater = debounce((force, {value, auto_refresh}) => {
+          if(force || auto_refresh){
+            this.renderRoot.querySelector("#ig").content = value;
+          }
+        });
         this.store = {
           config:{
             layout:1,
@@ -76,18 +98,16 @@
           <split-panel id="container" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
             <div slot=0 class="fill" style="display:flex;flex-direction: column;">
               <textarea id="input" style="flex-basis:100px;flex-grow:1;" @input=${e=>{
-                clearTimeout(this.timer);
                 this.store.data.value = e.target.value;
-                this.timer = setTimeout(() => {
-                  if (this.store.config.auto_refresh) {
-                    this.requestUpdate();
-                  }
-                }, this.store.config.refresh_wait)
+                this.updater.push(this.store.config.refresh_wait, {
+                  value:e.target.value,
+                  auto_refresh:this.store.config.auto_refresh
+                });
               }}>${this.store.data.value}</textarea>
               <div>
                 <label>自動更新<input type="checkbox" .checked=${this.store.config.auto_refresh} @input=${e=>this.store.config.auto_refresh = e.target.checked}></label>
                 <button id="run" @click=${e=>{
-                  this.requestUpdate();
+                  this.updater.force({value:this.store.data.value});
                 }}>RUN</button>
               </div>
             </div>
