@@ -105,7 +105,7 @@
                 });
               }}>${this.store.data.value}</textarea>
               <div>
-                <label>自動更新<input type="checkbox" .checked=${this.store.config.auto_refresh} @input=${e=>this.store.config.auto_refresh = e.target.checked}></label>
+                <label>自動反映<input type="checkbox" .checked=${this.store.config.auto_refresh} @input=${e=>this.store.config.auto_refresh = e.target.checked}></label>
                 <button id="run" @click=${e=>{
                   this.updater.force({value:this.store.data.value});
                 }}>RUN</button>
