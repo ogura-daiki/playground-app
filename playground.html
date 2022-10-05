@@ -126,11 +126,20 @@
         super();
         this.updater = debounce((force, {value, auto_refresh}) => {
           if(force || auto_refresh){
-            this.renderRoot.querySelector("#ig").content = value;
+            this.renderRoot.querySelector("#demo-view").content = value;
           }
         });
         this.config = Store.get("config");
         this.ctx = Store.get("ctx");
+
+        window.addEventListener("message", (event) => {
+          this.renderRoot.getElementById("demo-view").sendMessage({
+            type:"styles",
+            value:{
+              "test.css":`body{background:green}`,
+            }
+          });
+        }, false);
       }
       static get styles(){
         return css`
@@ -185,7 +194,7 @@
               </div>
             </div>
             <div slot=1 class="fill">
-              <demo-view id="ig" class="fill" slot=1 .content=${this.ctx.value}></demo-view>
+              <demo-view id="demo-view" class="fill" slot=1 .content=${this.ctx.value}></demo-view>
             </div>
           </split-panel>
         `;
@@ -204,6 +213,40 @@
     customElements.define("playground-app", PlayGroundApp);
     document.body.append(new PlayGroundApp());
 
+    const styleLoader = async ()=>{
+      const styles = await new Promise(resolve=>{
+        window.addEventListener("message", ({data}) => {
+          if(data.type = "styles"){
+            resolve(data.value);
+          }
+        }, false);
+        parent.postMessage("test", "*");
+      });
+      class StyleLoader extends HTMLElement {
+        constructor(){
+          super();
+          const styleName = this.getAttribute("href");
+          const styleSrc = styles[styleName] ?? "";
+          this.before(Object.assign(document.createElement("style"), {innerHTML: styleSrc}));
+          this.remove();
+        }
+      }
+      customElements.define("style-loader", StyleLoader);
+    }
+
+    const func2ScriptElem = (func, type) => {
+      const str = func+"";
+      const funcContentStr = str.replace(/^[^{]*{/,"").replace(/}[^}]*$/,"");
+      //インラインのスクリプトタグで定義しているので、直接閉じタグを使用するとHTMLの解析エラーになる
+      return `<script type="${type}">${funcContentStr}${"</"}script>`;
+    }
+
+    const generateDemoPage = (input) => {
+      const dom = new DOMParser().parseFromString(input, "text/html");
+      dom.head.innerHTML = func2ScriptElem(styleLoader, "module") + dom.head.innerHTML;
+      return dom.documentElement.innerHTML;
+    }
+
     class DemoView extends HTMLElement {
       constructor(){
         super();
@@ -214,7 +257,10 @@
         `;
       }
       set content(val){
-        this.shadowRoot.querySelector("#iframe").srcdoc = val;
+        this.shadowRoot.querySelector("#iframe").srcdoc = generateDemoPage(val);
+      }
+      sendMessage(msg){
+        this.shadowRoot.querySelector("#iframe").contentWindow.postMessage(msg, "*");
       }
       static get style(){
         return `
