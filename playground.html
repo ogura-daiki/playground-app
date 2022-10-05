@@ -210,7 +210,7 @@
         this.attachShadow({mode:"open"});
         this.shadowRoot.innerHTML = `
         <style>${this.constructor.style}</style>
-        <iframe id="iframe">
+        <iframe id="iframe" sandbox="allow-scripts allow-modals allow-downloads">
         `;
       }
       set content(val){
