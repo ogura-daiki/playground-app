@@ -185,7 +185,7 @@
               </div>
             </div>
             <div slot=1 class="fill">
-              <i-g id="ig" class="fill" slot=1 .content=${this.ctx.value}></i-g>
+              <demo-view id="ig" class="fill" slot=1 .content=${this.ctx.value}></demo-view>
             </div>
           </split-panel>
         `;
@@ -204,7 +204,7 @@
     customElements.define("playground-app", PlayGroundApp);
     document.body.append(new PlayGroundApp());
 
-    class InputGround extends HTMLElement {
+    class DemoView extends HTMLElement {
       constructor(){
         super();
         this.attachShadow({mode:"open"});
@@ -235,7 +235,7 @@
         `;
       }
     }
-    customElements.define("i-g", InputGround);
+    customElements.define("demo-view", DemoView);
     
 
     class Split extends LitElement {
