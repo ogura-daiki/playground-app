@@ -59,7 +59,14 @@
               opened:0,
             }
           }
-        }
+        },
+        {
+          v: 2,
+          up: (obj) => {
+            obj.tabs=[obj.opened];
+            return obj;
+          }
+        },
       ],
       "projects": [
         {
@@ -296,6 +303,17 @@
             padding:8px;
           }
 
+          .file_tab{
+            padding:4px;
+            gap:8px;
+            align-items:center;
+            border-right:1px solid lightgray;
+            color:white;
+          }
+          .file_tab.open{
+            background:black;
+          }
+
           .files_area{
             overflow-y:scroll;
             background:coral;
@@ -332,7 +350,7 @@
           <div class="col fill files_area">
             <div class="title">ファイル一覧</div>
             <div class="col files">
-              ${this.getCurrentProject().files.map(f=>html`<div>${f.path.split("/").pop()}</div>`)}
+              ${this.getCurrentProject().files.map(f=>html`<div>${this.getFileName(f)}</div>`)}
             </div>
           </div>
         `
@@ -343,6 +361,9 @@
       }
       getCurrentFile(){
         return this.getCurrentProject().files[this.ctx.opened];
+      }
+      getFileName(file){
+        return file.path.split("/").pop();
       }
 
       render(){
@@ -364,6 +385,13 @@
                         style="display:grid;place-items:center;aspect-ratio:1;font-size:1.5em;padding:0px;user-select:none;"
                         @click=${e=>{this.files_opened = !this.files_opened}}
                       >📁</button>
+                      ${this.ctx.tabs.map(id=>html`
+                        <div class="row file_tab ${this.ctx.opened===id?"open":""}">
+                          <span>${this.getFileName(this.getCurrentProject().files[id])}</span>
+                          <span>×</span>
+                        </div>
+                      `)}
+                      <div></div>
                   </div>
                   <div class="grow" style="position:relative;">
                     <textarea id="input" class="fill" @input=${e=>{
