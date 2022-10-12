@@ -124,6 +124,7 @@
         return {
           config:{type:Object},
           ctx:{type:Object},
+          menu_opened:{type:Boolean},
         };
       }
       constructor(){
@@ -135,6 +136,7 @@
         });
         this.config = Store.get("config");
         this.ctx = Store.get("ctx");
+        this.menu_opened = false;
 
         window.addEventListener("message", (event) => {
           this.renderRoot.getElementById("demo-view").sendMessage({
@@ -201,6 +203,7 @@
             width:100%;
             --stroke-color:white;
             --stroke-width:3px;
+            transition:transform .3s;
           }
           .menu_icon:before, .menu_icon:after{
             content:"";
@@ -212,6 +215,7 @@
             border-width:var(--stroke-width) 0px;
             box-sizing:border-box;
             height:60%;
+            transition:height .3s, background .3s, transform .3s, border .3s;
           }
           .menu_icon:after{
             height:var(--stroke-width);
@@ -219,6 +223,21 @@
             position:absolute;
             top:calc(50% - var(--stroke-width) / 2 );
             left:0%;
+            transition:transform .3s;
+          }
+
+          .open .menu_icon{
+            transform:rotateZ(180deg);
+          }
+          .open .menu_icon:before{
+            height:var(--stroke-width);
+            background:white;
+            border-width:0px;
+            border-color:transparent;
+            transform:rotateZ(45deg);
+          }
+          .open .menu_icon:after{
+            transform:rotateZ(-45deg);
           }
         `;
       }
@@ -226,7 +245,7 @@
         return html`
           <div class="col fill">
             <div class="top_bar" style="background:darkblue;">
-              <button class="top_menu" @click=${e=>alert("test")}>
+              <button class="top_menu ${this.menu_opened?"open":""}" @click=${e=>this.menu_opened = !this.menu_opened}>
                 <div class="menu_icon"></div>
               </button>
             </div>
