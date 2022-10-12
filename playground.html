@@ -10,7 +10,8 @@
     }
 
     html,
-    body {
+    body,
+    playground-app {
       width: 100%;
       height: 100%;
       margin: 0px;
@@ -146,11 +147,10 @@
       }
       static get styles(){
         return css`
+          :host{
+            display:block;
+          }
           #container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-flow: row;
             background: #fff;
             gap: 4px;
           }
@@ -170,36 +170,93 @@
             width: 100%;
             height: 100%;
           }
+
+          .col, .row{
+            display:flex;
+          }
+          .col{
+            flex-flow:column;
+          }
+          .row{
+            flex-flow:row;
+          }
+
+          .grow{
+            flex-grow:1;
+            flex-basis:0px;
+          }
+
+          .top_menu{
+            display:block;
+            padding:4px 12px;
+            width:52px;
+            background:transparent;
+            border-right:1px solid lightgray;
+          }
+          .menu_icon{
+            position:relative;
+            aspect-ratio:1;
+            display:grid;
+            place-items:center;
+            width:100%;
+            --stroke-color:white;
+            --stroke-width:3px;
+          }
+          .menu_icon:before, .menu_icon:after{
+            content:"";
+            display:block;
+            width:100%;
+          }
+          .menu_icon:before{
+            border:solid var(--stroke-color);
+            border-width:var(--stroke-width) 0px;
+            box-sizing:border-box;
+            height:60%;
+          }
+          .menu_icon:after{
+            height:var(--stroke-width);
+            background:var(--stroke-color);
+            position:absolute;
+            top:calc(50% - var(--stroke-width) / 2 );
+            left:0%;
+          }
         `;
       }
       render(){
         return html`
-          <split-panel id="container" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
-            <div slot=0 class="fill" style="display:flex;flex-direction: column;">
-              <textarea id="input" style="flex-basis:100px;flex-grow:1;" @input=${e=>{
-                this.updateCtx(ctx=>{
-                  ctx.value = e.target.value;
-                });
-                this.updater.push(this.config.refresh_wait, {
-                  value:e.target.value,
-                  auto_refresh:this.config.auto_refresh
-                });
-              }}>${this.ctx.value}</textarea>
-              <div>
-                <label>自動反映<input type="checkbox" .checked=${this.config.auto_refresh} @input=${e=>{
-                  this.updateConfig(config=>{
-                    config.auto_refresh = e.target.checked
+          <div class="col fill">
+            <div class="top_bar" style="background:darkblue;">
+              <button class="top_menu" @click=${e=>alert("test")}>
+                <div class="menu_icon"></div>
+              </button>
+            </div>
+            <split-panel id="container" class="grow" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
+              <div slot=0 class="fill col">
+                <textarea id="input" class="grow" @input=${e=>{
+                  this.updateCtx(ctx=>{
+                    ctx.value = e.target.value;
                   });
-                }}></label>
-                <button id="run" @click=${e=>{
-                  this.updater.force({value:this.ctx.value});
-                }}>RUN</button>
+                  this.updater.push(this.config.refresh_wait, {
+                    value:e.target.value,
+                    auto_refresh:this.config.auto_refresh
+                  });
+                }}>${this.ctx.value}</textarea>
+                <div>
+                  <label>自動反映<input type="checkbox" .checked=${this.config.auto_refresh} @input=${e=>{
+                    this.updateConfig(config=>{
+                      config.auto_refresh = e.target.checked
+                    });
+                  }}></label>
+                  <button id="run" @click=${e=>{
+                    this.updater.force({value:this.ctx.value});
+                  }}>RUN</button>
+                </div>
               </div>
-            </div>
-            <div slot=1 class="fill">
-              <demo-view id="demo-view" class="fill" slot=1 .content=${this.ctx.value}></demo-view>
-            </div>
-          </split-panel>
+              <div slot=1 class="fill">
+                <demo-view id="demo-view" class="fill" slot=1 .content=${this.ctx.value}></demo-view>
+              </div>
+            </split-panel>
+          </div>
         `;
       }
 
