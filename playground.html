@@ -249,32 +249,46 @@
                 <div class="menu_icon"></div>
               </button>
             </div>
-            <split-panel id="container" class="grow" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
-              <div slot=0 class="fill col">
-                <textarea id="input" class="grow" @input=${e=>{
-                  this.updateCtx(ctx=>{
-                    ctx.value = e.target.value;
-                  });
-                  this.updater.push(this.config.refresh_wait, {
-                    value:e.target.value,
-                    auto_refresh:this.config.auto_refresh
-                  });
-                }}>${this.ctx.value}</textarea>
-                <div>
-                  <label>自動反映<input type="checkbox" .checked=${this.config.auto_refresh} @input=${e=>{
-                    this.updateConfig(config=>{
-                      config.auto_refresh = e.target.checked
+            <div class="grow" style="position:relative;">
+              <split-panel id="container" class="fill" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
+                <div slot=0 class="fill col">
+                  <textarea id="input" class="grow" @input=${e=>{
+                    this.updateCtx(ctx=>{
+                      ctx.value = e.target.value;
                     });
-                  }}></label>
-                  <button id="run" @click=${e=>{
-                    this.updater.force({value:this.ctx.value});
-                  }}>RUN</button>
+                    this.updater.push(this.config.refresh_wait, {
+                      value:e.target.value,
+                      auto_refresh:this.config.auto_refresh
+                    });
+                  }}>${this.ctx.value}</textarea>
+                  <div>
+                    <label>自動反映<input type="checkbox" .checked=${this.config.auto_refresh} @input=${e=>{
+                      this.updateConfig(config=>{
+                        config.auto_refresh = e.target.checked
+                      });
+                    }}></label>
+                    <button id="run" @click=${e=>{
+                      this.updater.force({value:this.ctx.value});
+                    }}>RUN</button>
+                  </div>
                 </div>
-              </div>
-              <div slot=1 class="fill">
-                <demo-view id="demo-view" class="fill" slot=1 .content=${this.ctx.value}></demo-view>
-              </div>
-            </split-panel>
+                <div slot=1 class="fill">
+                  <demo-view id="demo-view" class="fill" slot=1 .content=${this.ctx.value}></demo-view>
+                </div>
+              </split-panel>
+              ${this.menu_opened?html`
+                <div class="fill" style="position:absolute;top:0px;left:0px;overflow-y:scroll;background:rgba(0,0,0,.2);z-index:99999;">
+                  <div class="col" style="background:white;">
+                    <div style="position:sticky;top:0px;background:white;">プロジェクト一覧</div>
+                    <div class="grow col" style="gap:8px;">
+                      ${[...Array(30)].map(_=>html`
+                        <div style="padding:4px;background:lightgray;">プロジェクト名称</div>
+                      `)}
+                    </div>
+                  </div>
+                </div>
+              `:""}
+            </div>
           </div>
         `;
       }
