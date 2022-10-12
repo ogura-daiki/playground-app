@@ -263,10 +263,6 @@
         `;
       }
       projectList(){
-        if(!this.menu_opened){
-          return "";
-        }
-
         return html`
           <div class="fill col projects_area">
             <div class="title">プロジェクト一覧</div>
@@ -313,7 +309,7 @@
                   <demo-view id="demo-view" class="fill" slot=1 .content=${this.ctx.value}></demo-view>
                 </div>
               </split-panel>
-              ${this.projectList()}
+              ${(this.menu_opened?()=>this.projectList():()=>"")()}
             </div>
           </div>
         `;
