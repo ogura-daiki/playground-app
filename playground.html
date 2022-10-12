@@ -98,6 +98,9 @@
   <script type="module">
     import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
 
+    //ほぼほぼ重複しないIDを生成
+    const createCodeId = ()=>`${Date.now()}-${crypto.randomUUID()}`;
+
     const debounce = func=>{
       let timer;
       return {
