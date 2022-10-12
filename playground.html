@@ -300,8 +300,8 @@
           <div class="fill col projects_area">
             <div class="title">プロジェクト一覧</div>
             <div class="grow col projects">
-              ${[...Array(30)].map(_=>html`
-                <div style="padding:4px;background:lightgray;">プロジェクト名称</div>
+              ${this.projects.map(({name})=>html`
+                <div style="padding:4px;background:lightgray;">${name}</div>
               `)}
             </div>
           </div>
