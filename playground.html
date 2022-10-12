@@ -157,6 +157,7 @@
           ctx:{type:Object},
           projects:{type:Array},
           menu_opened:{type:Boolean},
+          files_opened:{type:Boolean},
         };
       }
       constructor(){
@@ -170,6 +171,7 @@
         this.ctx = Store.get("ctx");
         this.projects = Store.get("projects");
         this.menu_opened = false;
+        this.files_opened = false;
 
         window.addEventListener("message", (event) => {
           this.renderRoot.getElementById("demo-view").sendMessage({
@@ -204,6 +206,7 @@
           .fill {
             width: 100%;
             height: 100%;
+            box-sizing:border-box;
           }
 
           .col, .row{
@@ -329,15 +332,31 @@
             <div class="grow" style="position:relative;">
               <split-panel id="container" class="fill" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
                 <div slot=0 class="fill col">
-                  <textarea id="input" class="grow" @input=${e=>{
-                    this.updateProjects(ps=>{
-                      this.getCurrentFile().value = e.target.value;
-                    });
-                    this.updater.push(this.config.refresh_wait, {
-                      value:e.target.value,
-                      auto_refresh:this.config.auto_refresh
-                    });
-                  }}>${this.getCurrentFile().value}</textarea>
+                  <div class="row" style="background:darkslateblue;z-index:1;">
+                      <button 
+                        style="display:grid;place-items:center;aspect-ratio:1;font-size:1.5em;padding:0px;user-select:none;"
+                        @click=${e=>{this.files_opened = !this.files_opened}}
+                      >📁</button>
+                  </div>
+                  <div class="grow" style="position:relative;">
+                    <textarea id="input" class="fill" @input=${e=>{
+                      this.updateProjects(ps=>{
+                        this.getCurrentFile().value = e.target.value;
+                      });
+                      this.updater.push(this.config.refresh_wait, {
+                        value:e.target.value,
+                        auto_refresh:this.config.auto_refresh
+                      });
+                    }}>${this.getCurrentFile().value}</textarea>
+                    ${this.files_opened?html`
+                      <div class="col" style="overflow-y:scroll;background:coral;position:absolute;top:0px;left:0px;width:100%;height:100%;">
+                        <div style="font-size:1.5em;position:sticky;top:0px;background:white;">ファイル一覧</div>
+                        <div class="col" style="padding:4px;gap:4px;">
+                          ${[...Array(50)].map(v=>html`<button>test</button>`)}
+                        </div>
+                      </div>
+                    `:""}
+                  </div>
                   <div>
                     <label>自動反映<input type="checkbox" .checked=${this.config.auto_refresh} @input=${e=>{
                       this.updateConfig(config=>{
