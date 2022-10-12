@@ -239,7 +239,44 @@
           .open .menu_icon:after{
             transform:rotateZ(-45deg);
           }
+
+          .projects_area{
+            position:absolute;
+            top:0px;
+            left:0px;
+            overflow-y:scroll;
+            z-index:99999;
+            background:white;
+          }
+          .projects_area .title{
+            position:sticky;
+            top:0px;
+            background:white;
+            padding:4px;
+            font-size:1.5em;
+          }
+          .projects_area .projects{
+            gap:8px;
+            padding:8px;
+          }
+          
         `;
+      }
+      projectList(){
+        if(!this.menu_opened){
+          return "";
+        }
+
+        return html`
+          <div class="fill col projects_area">
+            <div class="title">プロジェクト一覧</div>
+            <div class="grow col projects">
+              ${[...Array(30)].map(_=>html`
+                <div style="padding:4px;background:lightgray;">プロジェクト名称</div>
+              `)}
+            </div>
+          </div>
+        `
       }
       render(){
         return html`
@@ -276,18 +313,7 @@
                   <demo-view id="demo-view" class="fill" slot=1 .content=${this.ctx.value}></demo-view>
                 </div>
               </split-panel>
-              ${this.menu_opened?html`
-                <div class="fill" style="position:absolute;top:0px;left:0px;overflow-y:scroll;background:rgba(0,0,0,.2);z-index:99999;">
-                  <div class="col" style="background:white;">
-                    <div style="position:sticky;top:0px;background:white;">プロジェクト一覧</div>
-                    <div class="grow col" style="gap:8px;">
-                      ${[...Array(30)].map(_=>html`
-                        <div style="padding:4px;background:lightgray;">プロジェクト名称</div>
-                      `)}
-                    </div>
-                  </div>
-                </div>
-              `:""}
+              ${this.projectList()}
             </div>
           </div>
         `;
