@@ -295,6 +295,23 @@
             gap:8px;
             padding:8px;
           }
+
+          .files_area{
+            overflow-y:scroll;
+            background:coral;
+            position:absolute;
+            top:0px;
+            left:0px;
+          }
+          .files_area .title{
+            font-size:1.5em;
+            position:sticky;
+            top:0px;
+            background:white;
+          }
+          .files_area .files{
+            padding:8px 4px;
+          }
           
         `;
       }
@@ -306,6 +323,16 @@
               ${this.projects.map(({name})=>html`
                 <div style="padding:4px;background:lightgray;">${name}</div>
               `)}
+            </div>
+          </div>
+        `
+      }
+      fileList(){
+        return html`
+          <div class="col fill files_area">
+            <div class="title">ファイル一覧</div>
+            <div class="col files">
+              ${this.getCurrentProject().files.map(f=>html`<div>${f.path.split("/").pop()}</div>`)}
             </div>
           </div>
         `
@@ -348,14 +375,7 @@
                         auto_refresh:this.config.auto_refresh
                       });
                     }}>${this.getCurrentFile().value}</textarea>
-                    ${this.files_opened?html`
-                      <div class="col" style="overflow-y:scroll;background:coral;position:absolute;top:0px;left:0px;width:100%;height:100%;">
-                        <div style="font-size:1.5em;position:sticky;top:0px;background:white;">ファイル一覧</div>
-                        <div class="col" style="padding:4px;gap:4px;">
-                          ${this.getCurrentProject().files.map(f=>html`<div>${f.path.split("/").pop()}</div>`)}
-                        </div>
-                      </div>
-                    `:""}
+                    ${(this.files_opened?()=>this.fileList():()=>"")()}
                   </div>
                   <div>
                     <label>自動反映<input type="checkbox" .checked=${this.config.auto_refresh} @input=${e=>{
