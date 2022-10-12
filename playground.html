@@ -24,6 +24,11 @@
 
   <script>
 
+    //ほぼほぼ重複しないIDを生成
+    const createProjectId = ()=>`${Date.now()}-${crypto.randomUUID()}`;
+    window.createProjectId = createProjectId;
+    const initialProjectId = createProjectId();
+
     const migrationsMap = {
       "config": [
         {
@@ -44,6 +49,35 @@
             return {
               value:"",
             }
+          }
+        },
+        {
+          v: 1,
+          up: () => {
+            return {
+              project:initialProjectId,
+              opened:0,
+            }
+          }
+        }
+      ],
+      "projects": [
+        {
+          v: 0,
+          up: () => {
+            return [
+              {
+                id:initialProjectId,
+                name:"新規プロジェクト",
+                files:[
+                  {
+                    id:0,
+                    path:"index.html",
+                    value:"",
+                  }
+                ],
+              }
+            ];
           }
         }
       ]
@@ -99,9 +133,6 @@
   <script type="module">
     import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
 
-    //ほぼほぼ重複しないIDを生成
-    const createCodeId = ()=>`${Date.now()}-${crypto.randomUUID()}`;
-
     const debounce = func=>{
       let timer;
       return {
@@ -124,6 +155,7 @@
         return {
           config:{type:Object},
           ctx:{type:Object},
+          projects:{type:Array},
           menu_opened:{type:Boolean},
         };
       }
@@ -136,6 +168,7 @@
         });
         this.config = Store.get("config");
         this.ctx = Store.get("ctx");
+        this.projects = Store.get("projects");
         this.menu_opened = false;
 
         window.addEventListener("message", (event) => {
@@ -274,6 +307,14 @@
           </div>
         `
       }
+
+      getCurrentProject(){
+        return this.projects.find(({id})=>id===this.ctx.project);
+      }
+      getCurrentFile(){
+        return this.getCurrentProject().files[this.ctx.opened];
+      }
+
       render(){
         return html`
           <div class="col fill">
@@ -286,14 +327,14 @@
               <split-panel id="container" class="fill" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
                 <div slot=0 class="fill col">
                   <textarea id="input" class="grow" @input=${e=>{
-                    this.updateCtx(ctx=>{
-                      ctx.value = e.target.value;
+                    this.updateProjects(ps=>{
+                      this.getCurrentFile().value = e.target.value;
                     });
                     this.updater.push(this.config.refresh_wait, {
                       value:e.target.value,
                       auto_refresh:this.config.auto_refresh
                     });
-                  }}>${this.ctx.value}</textarea>
+                  }}>${this.getCurrentFile().value}</textarea>
                   <div>
                     <label>自動反映<input type="checkbox" .checked=${this.config.auto_refresh} @input=${e=>{
                       this.updateConfig(config=>{
@@ -301,12 +342,12 @@
                       });
                     }}></label>
                     <button id="run" @click=${e=>{
-                      this.updater.force({value:this.ctx.value});
+                      this.updater.force({value:this.getCurrentFile().value});
                     }}>RUN</button>
                   </div>
                 </div>
                 <div slot=1 class="fill">
-                  <demo-view id="demo-view" class="fill" slot=1 .content=${this.ctx.value}></demo-view>
+                  <demo-view id="demo-view" class="fill" slot=1 .content=${this.getCurrentFile().value}></demo-view>
                 </div>
               </split-panel>
               ${(this.menu_opened?()=>this.projectList():()=>"")()}
@@ -323,6 +364,11 @@
       updateConfig(func){
         func(this.config);
         Store.set("config", this.config);
+      }
+
+      updateProjects(func){
+        func(this.projects);
+        Store.set("projects", this.projects);
       }
     }
     customElements.define("playground-app", PlayGroundApp);
