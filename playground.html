@@ -140,6 +140,18 @@
   <script type="module">
     import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
 
+    const newProject = ()=>({
+      id:createProjectId(),
+      name:`新規プロジェクト[${new Intl.DateTimeFormat('ja-JP', { dateStyle: 'short', timeStyle: 'short' }).format(Date.now())}]`,
+      files:[
+        {
+          id:0,
+          path:"index.html",
+          value:"",
+        }
+      ],
+    });
+
     const debounce = func=>{
       let timer;
       return {
@@ -336,7 +348,12 @@
       projectList(){
         return html`
           <div class="fill col projects_area">
-            <div class="title">プロジェクト一覧</div>
+            <div class="title">プロジェクト一覧<button style="margin-left:auto;" @click=${e=>{
+              this.updateProjects(ps=>{
+                ps.push(newProject());
+              });
+              this.requestUpdate();
+            }}>+</button></div>
             <div class="grow col projects">
               ${this.projects.map(({name})=>html`
                 <div style="padding:4px;background:lightgray;">${name}</div>
