@@ -243,6 +243,11 @@
             flex-basis:0px;
           }
 
+          .centering{
+            display:grid;
+            place-items:center;
+          }
+
           .top_menu{
             display:block;
             padding:4px 12px;
@@ -253,8 +258,6 @@
           .menu_icon{
             position:relative;
             aspect-ratio:1;
-            display:grid;
-            place-items:center;
             width:100%;
             --stroke-color:white;
             --stroke-width:3px;
@@ -440,7 +443,7 @@
           <div class="col fill">
             <div class="top_bar row" style="background:darkblue;">
               <button class="top_menu ${this.menu_opened?"open":""}" @click=${e=>this.menu_opened = !this.menu_opened}>
-                <div class="menu_icon"></div>
+                <div class="menu_icon centering"></div>
               </button>
               <input type="text" .value=${this.getCurrentProject().name} @input=${e=>this.updateProjects(()=>{
                 this.getCurrentProject().name = e.target.value;
@@ -450,8 +453,9 @@
               <split-panel id="container" class="fill" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
                 <div slot=0 class="fill col">
                   <div class="row" style="background:darkslateblue;z-index:1;">
-                      <button 
-                        style="display:grid;place-items:center;aspect-ratio:1;font-size:1.5em;padding:0px;user-select:none;"
+                      <button
+                        class="centering"
+                        style="aspect-ratio:1;font-size:1.5em;padding:0px;user-select:none;"
                         @click=${e=>{this.files_opened = !this.files_opened}}
                       >📁</button>
                       ${this.ctx.tabs.map(id=>html`
@@ -542,7 +546,7 @@
             `)}
           </div>
           `:""}
-          <div style="width:1em;display:grid;place-items:center;"><span style="font-size:.5em;">&lt;&gt;</span></div>
+          <div class="centering" style="width:1em;"><span style="font-size:.5em;">&lt;&gt;</span></div>
           <span>${this.data.name}</span>
         </div>
         `;
@@ -580,7 +584,7 @@
             `)}
           </div>
           `:""}
-          <div style="width:1em;display:grid;place-items:center;">
+          <div class="centering" style="width:1em;">
             <div style="font-family:monospace;font-weight:bold;transition:transform .1s;transform:rotateZ(${this.open?"90":"0"}deg);">&gt;</div>
           </div>
           <span>${this.data.name}</span>
