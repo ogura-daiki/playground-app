@@ -530,11 +530,21 @@
         this.style.display="contents";
         return html`
         <div
-          class="file"
-          style="padding-left:${this.nest*10}px;padding-right:8px;"
+          class="file row"
+          style="gap:4px;padding-right:8px;"
           @click=${e=>{
           alert(JSON.stringify(this.data,null,2));
-        }}>${this.data.name}</div>
+        }}>
+          ${this.nest?html`
+          <div class="row" style="gap:4px;margin-left:-0em;">
+            ${[...Array(this.nest)].map(()=>html`
+              <div style="width:.5em;box-sizing:border-box;border-right:solid white 1px"></div>
+            `)}
+          </div>
+          `:""}
+          <div style="width:1em;display:grid;place-items:center;"><span style="font-size:.5em;">&lt;&gt;</span></div>
+          <span>${this.data.name}</span>
+        </div>
         `;
       }
     });
@@ -557,13 +567,23 @@
         this.style.display="contents";
         return html`
         <div
-          class="folder col"
-          style="padding-left:${this.nest*10}px;padding-right:8px;"
+          class="folder row"
+          style="gap:4px;padding-right:8px;"
           @click=${e=>{
             this.open = !this.open;
           }}
         >
-          ${this.data.name}
+          ${this.nest?html`
+          <div class="row" style="gap:4px;margin-left:-0em;">
+            ${[...Array(this.nest)].map(()=>html`
+              <div style="width:.5em;box-sizing:border-box;border-right:solid white 1px"></div>
+            `)}
+          </div>
+          `:""}
+          <div style="width:1em;display:grid;place-items:center;">
+            <div style="font-family:monospace;font-weight:bold;transition:transform .1s;transform:rotateZ(${this.open?"90":"0"}deg);">&gt;</div>
+          </div>
+          <span>${this.data.name}</span>
         </div>
         <div style="display:${this.open?"contents":"none"}">
           ${this.data.files.map(e=>
