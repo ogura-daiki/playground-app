@@ -328,19 +328,29 @@
 
           .files_area{
             overflow-y:scroll;
-            background:coral;
             position:absolute;
             top:0px;
             left:0px;
+            user-select:none;
+            /*ガラス調に*/
+            background: rgba( 47, 47, 47, 0.6 );
+            /*box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );*/
+            backdrop-filter: blur( 2px );
+            -webkit-backdrop-filter: blur( 2px );
+            border: 1px solid rgba( 255, 255, 255, 0.18 );
+            color:white;
           }
           .files_area .title{
             font-size:1.5em;
             position:sticky;
             top:0px;
-            background:white;
+            background: rgba( 47, 47, 47, 0.85 );
           }
           .files_area .files{
             padding:8px 4px;
+          }
+          .files_area .files .file:hover{
+            background:rgba(255,255,255,.2);
           }
           
         `;
@@ -367,7 +377,7 @@
           <div class="col fill files_area">
             <div class="title">ファイル一覧</div>
             <div class="col files">
-              ${this.getCurrentProject().files.map(f=>html`<div>${this.getFileName(f)}</div>`)}
+              ${this.getCurrentProject().files.map(f=>html`<div class="file">${this.getFileName(f)}</div>`)}
             </div>
           </div>
         `
