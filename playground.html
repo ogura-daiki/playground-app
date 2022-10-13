@@ -349,7 +349,7 @@
           .files_area .files{
             padding:8px 4px;
           }
-          .files_area .files .file:hover{
+          .files_area .files *:where(.folder, .file):hover{
             background:rgba(255,255,255,.2);
           }
           
@@ -373,11 +373,53 @@
         `
       }
       fileList(){
+        //const files = this.getCurrentProject().files;
+        const files = [
+          {
+            type:"file",
+            name:"index.html",
+            value:"1",
+          },
+          {
+            type:"folder",
+            name:"test",
+            value:"",
+            files:[
+              {
+                type:"file",
+                name:"index.html",
+                value:"2",
+              },
+              {
+                type:"folder",
+                name:"test2",
+                value:"",
+                files:[
+                  {
+                    type:"file",
+                    name:"index.html",
+                    value:"3",
+                  },
+                  {
+                    type:"file",
+                    name:"index2.html",
+                    value:"4",
+                  },
+                ],
+              },
+              {
+                type:"file",
+                name:"index2.html",
+                value:"5",
+              },
+            ],
+          },
+        ];
         return html`
           <div class="col fill files_area">
             <div class="title">ファイル一覧</div>
             <div class="col files">
-              ${this.getCurrentProject().files.map(f=>html`<div class="file">${this.getFileName(f)}</div>`)}
+              <tree-folder .data=${{name:"root", files}} .nest=${0}></tree-folder>
             </div>
           </div>
         `
@@ -470,6 +512,69 @@
     }
     customElements.define("playground-app", PlayGroundApp);
     document.body.append(new PlayGroundApp());
+
+    customElements.define("tree-file", class extends LitElement{
+      static get properties(){
+        return {
+          nest:{type:Number},
+          data:{type:Object},
+        }
+      }
+      constructor(){
+        super();
+        this.data={name:""};
+        this.nest=0;
+      }
+      createRenderRoot(){return this;}
+      render(){
+        this.style.display="contents";
+        return html`
+        <div
+          class="file"
+          style="padding-left:${this.nest*10}px;padding-right:8px;"
+          @click=${e=>{
+          alert(JSON.stringify(this.data,null,2));
+        }}>${this.data.name}</div>
+        `;
+      }
+    });
+    customElements.define("tree-folder", class extends LitElement{
+      static get properties(){
+        return {
+          nest:{type:Number},
+          data:{type:Object},
+          open:{type:Boolean},
+        }
+      }
+      constructor(){
+        super();
+        this.nest=0;
+        this.data={name:"",files:[]};
+        this.open = false;
+      }
+      createRenderRoot(){return this;}
+      render(){
+        this.style.display="contents";
+        return html`
+        <div
+          class="folder col"
+          style="padding-left:${this.nest*10}px;padding-right:8px;"
+          @click=${e=>{
+            this.open = !this.open;
+          }}
+        >
+          ${this.data.name}
+        </div>
+        <div style="display:${this.open?"contents":"none"}">
+          ${this.data.files.map(e=>
+            e.type==="folder"
+              ?html`<tree-folder .data=${e} .nest=${this.nest+1}></tree-folder>`
+              :html`<tree-file .data=${e} .nest=${this.nest+1}></tree-fi>`
+          )}
+        </div>
+        `;
+      }
+    });
 
     const styleLoader = async ()=>{
       const styles = await new Promise(resolve=>{
