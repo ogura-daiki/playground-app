@@ -422,7 +422,7 @@
           <div class="col fill files_area">
             <div class="title">ファイル一覧</div>
             <div class="col files">
-              <tree-folder .data=${{name:"root", files}} .nest=${0}></tree-folder>
+              <tree-file .data=${{name:"root", type:"folder", files}} .nest=${0}></tree-file>
             </div>
           </div>
         `
@@ -522,48 +522,13 @@
         return {
           nest:{type:Number},
           data:{type:Object},
+          open:{type:Boolean},
         }
       }
       constructor(){
         super();
         this.data={name:""};
         this.nest=0;
-      }
-      createRenderRoot(){return this;}
-      render(){
-        this.style.display="contents";
-        return html`
-        <div
-          class="file row"
-          style="gap:4px;padding-right:8px;"
-          @click=${e=>{
-          alert(JSON.stringify(this.data,null,2));
-        }}>
-          ${this.nest?html`
-          <div class="row" style="gap:4px;margin-left:-0em;">
-            ${[...Array(this.nest)].map(()=>html`
-              <div style="width:.5em;box-sizing:border-box;border-right:solid white 1px"></div>
-            `)}
-          </div>
-          `:""}
-          <div class="centering" style="width:1em;"><span style="font-size:.5em;">&lt;&gt;</span></div>
-          <span>${this.data.name}</span>
-        </div>
-        `;
-      }
-    });
-    customElements.define("tree-folder", class extends LitElement{
-      static get properties(){
-        return {
-          nest:{type:Number},
-          data:{type:Object},
-          open:{type:Boolean},
-        }
-      }
-      constructor(){
-        super();
-        this.nest=0;
-        this.data={name:"",files:[]};
         this.open = false;
       }
       createRenderRoot(){return this;}
@@ -571,10 +536,14 @@
         this.style.display="contents";
         return html`
         <div
-          class="folder row"
+          class="${this.data.type} row"
           style="gap:4px;padding-right:8px;"
           @click=${e=>{
-            this.open = !this.open;
+            if(this.data.type==="folder"){
+              this.open = !this.open;
+              return;
+            }
+            alert(JSON.stringify(this.data,null,2));
           }}
         >
           ${this.nest?html`
@@ -585,17 +554,20 @@
           </div>
           `:""}
           <div class="centering" style="width:1em;">
-            <div style="font-family:monospace;font-weight:bold;transition:transform .1s;transform:rotateZ(${this.open?"90":"0"}deg);">&gt;</div>
+            ${this.data.type==="file"
+              ?html`<span style="font-size:.5em;">&lt;&gt;</span>`
+              :html`<div style="font-family:monospace;font-weight:bold;transition:transform .1s;transform:rotateZ(${this.open?"90":"0"}deg);">&gt;</div>`
+            }
           </div>
           <span>${this.data.name}</span>
         </div>
+        ${this.data.type==="folder"?html`
         <div style="display:${this.open?"contents":"none"}">
           ${this.data.files.map(e=>
-            e.type==="folder"
-              ?html`<tree-folder .data=${e} .nest=${this.nest+1}></tree-folder>`
-              :html`<tree-file .data=${e} .nest=${this.nest+1}></tree-fi>`
+            html`<tree-file .data=${e} .nest=${this.nest+1}></tree-fi>`
           )}
         </div>
+        `:""}
         `;
       }
     });
