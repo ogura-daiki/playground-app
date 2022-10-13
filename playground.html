@@ -318,6 +318,19 @@
             padding:8px;
           }
 
+          .file_tabs{
+            padding-right:8px;
+            overflow-x:scroll;
+            background:darkslateblue;
+          }
+          .filelist_open_button{
+            position:sticky;
+            left:0px;
+            aspect-ratio:1;
+            font-size:1.5em;
+            padding:0px;
+            user-select:none;
+          }
           .file_tab{
             padding:4px;
             gap:8px;
@@ -452,10 +465,9 @@
             <div class="grow" style="position:relative;">
               <split-panel id="container" class="fill" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
                 <div slot=0 class="fill col">
-                  <div class="row file_tabs" style="padding-right:8px;overflow-x:scroll;background:darkslateblue;z-index:1;">
+                  <div class="row file_tabs">
                       <button
-                        class="centering"
-                        style="position:sticky;left:0px;aspect-ratio:1;font-size:1.5em;padding:0px;user-select:none;"
+                        class="centering filelist_open_button"
                         @click=${e=>{this.files_opened = !this.files_opened}}
                       >📁</button>
                       ${this.ctx.tabs.map(id=>html`
