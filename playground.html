@@ -414,13 +414,23 @@
                   this.openTab(this.getCurrentProject(), file.id);
                 }}
                 @rename=${({detail:{files,file,name}})=>{
-                  console.log(files, file, name)
                   if(files.some(f=>f!==file&&f.name===name)){
                     alert(`ファイル名：${name}はフォルダ内に既に存在します。`);
                     return;
                   }
                   this.updateProjects(()=>{
                     file.name = name;
+                  });
+                  this.requestUpdate();
+                }}
+                @create=${({detail:{files,value}})=>{
+                  if(files.some(f=>f.name===value.name&&f.type===value.type)){
+                    alert(`${{file:"ファイル",folder:"フォルダ"}[value.type]}名：${name}はフォルダ内に既に存在します。`);
+                    return;
+                  }
+                  this.updateProjects(()=>{
+                    files.push(value);
+                    console.log(files);
                   });
                   this.requestUpdate();
                 }}
@@ -633,7 +643,7 @@
           }}>
             ${this.nest?html`
               <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
-                const name = prompt({folder:"フォルダ",file:"ファイル"}[this.data.type]+"名を変更", this.data.name).trim();
+                const name = prompt({folder:"フォルダ",file:"ファイル"}[this.data.type]+"名を変更", this.data.name)?.trim();
                 if(name){
                   this.dispatchEvent(new CustomEvent("rename", {
                     detail:{
@@ -648,17 +658,25 @@
             `:""}
             ${this.data.type==="folder"?html`
               <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
-                const name = prompt("ファイル名を入力").trim();
+                const name = prompt("ファイル名を入力")?.trim();
                 if(name){
-                  this.data.files.push(createFile({name}));
-                  this.requestUpdate();
+                  this.dispatchEvent(new CustomEvent("create", {
+                    detail:{
+                      files:this.data.files,
+                      value:createFile({name}),
+                    }
+                  }));
                 }
               }}>ファイル</button>
               <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
-                const name = prompt("フォルダ名を入力").trim();
+                const name = prompt("フォルダ名を入力")?.trim();
                 if(name){
-                  this.data.files.push(createFolder({name}));
-                  this.requestUpdate();
+                  this.dispatchEvent(new CustomEvent("create", {
+                    detail:{
+                      files:this.data.files,
+                      value:createFolder({name}),
+                    }
+                  }));
                 }
               }}>フォルダ</button>
             `:""}
