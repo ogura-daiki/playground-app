@@ -393,8 +393,16 @@
               this.requestUpdate();
             }}>+</button></div>
             <div class="grow col projects">
-              ${this.projects.map(({ name }) => html`
-                <div style="padding:4px;background:lightgray;">${name}</div>
+              ${this.projects.map(({ id, name }) => html`
+                <div
+                  style="padding:4px;background:lightgray;"
+                  @click=${e=>{
+                    this.updateCtx(ctx=>{
+                      ctx.project = id;
+                    });
+                    this.requestUpdate();
+                  }}
+                >${name}</div>
               `)}
             </div>
           </div>
