@@ -483,9 +483,6 @@
         this.requestUpdate();
       }
       closeTab(pro, id){
-        if(pro.tabs.length <= 1){
-          return;
-        }
         const idx = pro.tabs.findIndex(tab=>tab===id);
         this.updateProjects(()=>{
           pro.tabs.splice(idx, 1);
@@ -554,15 +551,20 @@
                 <div slot=0 class="fill col">
                   ${this.fileTabs()}
                   <div class="grow" style="position:relative;">
-                    <monaco-editor .filename=${this.getOpenedFile().name} .value=${this.getOpenedFile().value} id="input" class="fill" @input=${e => {
-                      this.updateProjects(ps => {
-                        this.getOpenedFile().value = e.target.value;
-                      });
-                      this.updater.push(this.config.refresh_wait, {
-                        value: e.target.value,
-                        auto_refresh: this.config.auto_refresh
-                      });
-                    }}></monaco-editor>
+                    ${(this.getCurrentProject().opened!=null
+                      ?()=>html`
+                        <monaco-editor .filename=${this.getOpenedFile().name} .value=${this.getOpenedFile().value} id="input" class="fill" @input=${e => {
+                          this.updateProjects(ps => {
+                            this.getOpenedFile().value = e.target.value;
+                          });
+                          this.updater.push(this.config.refresh_wait, {
+                            value: e.target.value,
+                            auto_refresh: this.config.auto_refresh
+                          });
+                        }}></monaco-editor>
+                      `
+                      :()=>html`ファイルが開かれていません`
+                    )()}
                     ${(this.files_opened ? () => this.fileList() : () => "")()}
                   </div>
                   <div>
@@ -577,7 +579,10 @@
                   </div>
                 </div>
                 <div slot=1 class="fill">
-                  <demo-view id="demo-view" class="fill" slot=1 .content=${this.getOpenedFile().value}></demo-view>
+                  ${(this.getCurrentProject().opened
+                    ?()=>html`<demo-view id="demo-view" class="fill" slot=1 .content=${this.getOpenedFile().value}></demo-view>`
+                    :()=>html`ファイルが開かれていません`
+                  )()}
                 </div>
               </split-panel>
               ${(this.menu_opened ? () => this.projectList() : () => "")()}
