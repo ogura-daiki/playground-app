@@ -432,10 +432,26 @@
             class="centering filelist_open_button"
             @click=${e => { this.files_opened = !this.files_opened }}
           >📁</button>
-          ${pro.tabs.map(id => html`
-            <div class="row file_tab ${pro.opened === id ? "open" : ""}">
+          ${pro.tabs.map((id, idx) => html`
+            <div class="row file_tab ${pro.opened === id ? "open" : ""}"
+              @click=${e=>{
+                this.updateProjects(()=>{
+                  pro.opened = id;
+                });
+                this.requestUpdate();
+              }}
+            >
               <span>${this.findFileById(id).name}</span>
-              <div class="centering close_button">×</div>
+              <div
+                class="centering close_button"
+                @click=${e=>{
+                  this.updateProjects(()=>{
+                    pro.tabs.splice(idx, 1);
+                  });
+                  this.requestUpdate();
+                  e.stopPropagation();
+                }}
+              >×</div>
             </div>
           `)}
         </div>
