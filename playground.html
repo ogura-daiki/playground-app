@@ -80,14 +80,15 @@
                 files: [
                   {
                     id: 0,
-                    path: "index.html",
+                    type:"file",
+                    name: "index.html",
                     value: "",
                   }
                 ],
               }
             ];
           }
-        }
+        },
       ]
     };
 
@@ -405,6 +406,7 @@
         //const files = this.getCurrentProject().files;
         const files = [
           {
+            id:0,
             type: "file",
             name: "index.html",
             value: "1",
@@ -460,9 +462,6 @@
       getCurrentFile() {
         return this.getCurrentProject().files[this.ctx.opened];
       }
-      getFileName(file) {
-        return file.path.split("/").pop();
-      }
 
       render() {
         return html`
@@ -485,14 +484,14 @@
                       >📁</button>
                       ${this.ctx.tabs.map(id => html`
                         <div class="row file_tab ${this.ctx.opened === id ? "open" : ""}">
-                          <span>${this.getFileName(this.getCurrentProject().files[id])}</span>
+                          <span>${this.getCurrentProject().files[id].name}</span>
                           <span>×</span>
                         </div>
                       `)}
                       <div></div>
                   </div>
                   <div class="grow" style="position:relative;">
-                    <monaco-editor .language=${"html"} .value=${this.getCurrentFile().value} id="input" class="fill" @input=${e => {
+                    <monaco-editor .filename=${this.getCurrentFile().name} .value=${this.getCurrentFile().value} id="input" class="fill" @input=${e => {
                       this.updateProjects(ps => {
                         this.getCurrentFile().value = e.target.value;
                       });
@@ -812,7 +811,17 @@
 
     customElements.define("split-panel", Split);
 
-    
+    const getLanguageFromFileName = fileName => {
+      console.log(fileName)
+      const ext = fileName.match(/\.([^.]+)$/)[1];
+      const list = {
+        html:"html",
+        htm:"html",
+        js:"javascript",
+        css:"css",
+      };
+      return list[ext];
+    }
     require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@latest/min/vs' }});
     const proxy = URL.createObjectURL(new Blob([`
       self.MonacoEnvironment = {
@@ -826,7 +835,7 @@
     class MonacoEditor extends LitElement{
       static get properties(){
         return {
-          language:{type:String},
+          filename:{type:String},
           theme:{type:String},
         };
       }
@@ -835,7 +844,7 @@
       constructor(){
         super();
         this.#value="";
-        this.language="javascript";
+        this.filename="newfile.html";
         this.theme="vs-dark";
       }
       static get styles(){
@@ -865,15 +874,14 @@
       updated() {
         loadEditor.then(e=>{
           if(this.#editor){
-            console.log(this.#editor)
             this.#editor.getModel().setValue(this.value);
-            monaco.editor.setModelLanguage(this.#editor.getModel(), this.language);
+            monaco.editor.setModelLanguage(this.#editor.getModel(), getLanguageFromFileName(this.filename));
             monaco.editor.setTheme(this.theme);
             return;
           }
           this.#editor = monaco.editor.create(this.renderRoot.querySelector("#editor"), {
             value: this.value,
-            language: this.language,
+            language: getLanguageFromFileName(this.filename),
             theme: this.theme,
             automaticLayout: true,
           });
