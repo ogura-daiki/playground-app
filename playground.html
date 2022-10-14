@@ -353,6 +353,15 @@
           .file_tab.open{
             background:black;
           }
+          .file_tab .close_button{
+            width:1.5em;
+            aspect-ratio:1;
+            border-radius:.2em;
+            user-select:none;
+          }
+          .file_tab .close_button:where(:hover, :open){
+            background:rgba(255,255,200,.5)
+          }
 
           .files_area{
             overflow-y:scroll;
@@ -452,7 +461,7 @@
                       ${this.ctx.tabs.map(id => html`
                         <div class="row file_tab ${this.ctx.opened === id ? "open" : ""}">
                           <span>${this.getCurrentProject().files[id].name}</span>
-                          <span>×</span>
+                          <div class="centering close_button">×</div>
                         </div>
                       `)}
                   </div>
