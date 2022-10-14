@@ -26,9 +26,9 @@
   <script>
 
     //ほぼほぼ重複しないIDを生成
-    const createProjectId = () => `${Date.now()}-${crypto.randomUUID()}`;
-    window.createProjectId = createProjectId;
-    const initialProjectId = createProjectId();
+    const createId = () => `${Date.now()}-${crypto.randomUUID()}`;
+    window.createId = createId;
+    const initialProjectId = createId();
 
     const migrationsMap = {
       "config": [
@@ -143,7 +143,7 @@
     import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
 
     const newProject = () => ({
-      id: createProjectId(),
+      id: createId(),
       name: `新規プロジェクト[${new Intl.DateTimeFormat('ja-JP', { dateStyle: 'short', timeStyle: 'short' }).format(Date.now())}]`,
       files: [
         {
