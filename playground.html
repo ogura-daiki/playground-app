@@ -407,6 +407,7 @@
             <div class="title">ファイル一覧</div>
             <div class="col files">
               <tree-file
+                .open=${true}
                 .data=${{ name: this.getCurrentProject().name, type: "folder", files }}
                 .nest=${0}
                 @select=${({detail:file})=>{
