@@ -30,6 +30,9 @@
     window.createId = createId;
     const initialProjectId = createId();
 
+    const createFile = ({name, value=""}) => ({id:createId(),type:"file",name,value});
+    const createFolder = ({name, files=[]}) => ({id:createId(),type:"folder",name,files});
+
     const migrationsMap = {
       "config": [
         {
@@ -78,12 +81,7 @@
                 id: initialProjectId,
                 name: "新規プロジェクト",
                 files: [
-                  {
-                    id: createId(),
-                    type:"file",
-                    name: "index.html",
-                    value: "",
-                  }
+                  createFile({name:"index.html"})
                 ],
               }
             ];
@@ -615,26 +613,16 @@
             return false;
           }}>
             <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
-              const name = prompt("ファイル名を入力");
-              if(name?.trim()){
-                this.data.files.push({
-                  id:createId(),
-                  type:"file",
-                  name:name.trim(),
-                  value:"",
-                });
+              const name = prompt("ファイル名を入力").trim();
+              if(name){
+                this.data.files.push(createFile({name}));
                 this.requestUpdate();
               }
             }}>ファイル</button>
             <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
-              const name = prompt("フォルダ名を入力");
-              if(name?.trim()){
-                this.data.files.push({
-                  id:createId(),
-                  type:"folder",
-                  name:name.trim(),
-                  files:[],
-                });
+              const name = prompt("フォルダ名を入力").trim();
+              if(name){
+                this.data.files.push(createFolder({name}));
                 this.requestUpdate();
               }
             }}>フォルダ</button>
