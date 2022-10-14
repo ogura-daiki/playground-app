@@ -281,6 +281,20 @@
             transform:rotateZ(-45deg);
           }
 
+          .code_area{
+            position:relative;
+            background:black;
+            color:white;
+          }
+          .code_area .no_opened_file{
+            font-size:.5em;
+            user-select:none;
+            aspect-ratio:1;
+            background:rgba(255,255,255,.5);
+            padding:16px;
+            border-radius:16px;
+          }
+
           .projects_area{
             position:absolute;
             top:0px;
@@ -550,7 +564,7 @@
               <split-panel id="container" class="fill" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
                 <div slot=0 class="fill col">
                   ${this.fileTabs()}
-                  <div class="grow" style="position:relative;">
+                  <div class="grow code_area">
                     ${(this.getCurrentProject().opened!=null
                       ?()=>html`
                         <monaco-editor .filename=${this.getOpenedFile().name} .value=${this.getOpenedFile().value} id="input" class="fill" @input=${e => {
@@ -563,7 +577,13 @@
                           });
                         }}></monaco-editor>
                       `
-                      :()=>html`ファイルが開かれていません`
+                      :()=>html`
+                      <div class="fill centering">
+                        <div class="centering no_opened_file">
+                          <span style="font-size:8em;line-height:1em;">📁</span>
+                          <span>ファイルが開かれていません</span>
+                      </div>
+                      `
                     )()}
                     ${(this.files_opened ? () => this.fileList() : () => "")()}
                   </div>
