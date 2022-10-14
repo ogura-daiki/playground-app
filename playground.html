@@ -32,6 +32,18 @@
 
     const createFile = ({name, value=""}) => ({id:createId(),type:"file",name,value});
     const createFolder = ({name, files=[]}) => ({id:createId(),type:"folder",name,files});
+    
+    const newProject = (name) => {
+      const index = createFile({name:"index.html"});
+      return {
+        id: createId(),
+        name: name||`新規プロジェクト[${new Intl.DateTimeFormat('ja-JP', { dateStyle: 'short', timeStyle: 'short' }).format(Date.now())}]`,
+        files: [index],
+        opened:index.id,
+        tabs:[index.id],
+      }
+    };
+    window.newProject = newProject;
 
     const migrationsMap = {
       "config": [
@@ -60,15 +72,7 @@
           up: () => {
             return {
               project: initialProjectId,
-              opened: 0,
             }
-          }
-        },
-        {
-          v: 2,
-          up: (obj) => {
-            obj.tabs = [obj.opened];
-            return obj;
           }
         },
       ],
@@ -77,13 +81,7 @@
           v: 0,
           up: () => {
             return [
-              {
-                id: initialProjectId,
-                name: "新規プロジェクト",
-                files: [
-                  createFile({name:"index.html"})
-                ],
-              }
+              newProject("新規プロジェクト"),
             ];
           }
         },
@@ -139,18 +137,6 @@
 
   <script type="module">
     import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
-
-    const newProject = () => ({
-      id: createId(),
-      name: `新規プロジェクト[${new Intl.DateTimeFormat('ja-JP', { dateStyle: 'short', timeStyle: 'short' }).format(Date.now())}]`,
-      files: [
-        {
-          id: 0,
-          path: "index.html",
-          value: "",
-        }
-      ],
-    });
 
     const debounce = func => {
       let timer;
@@ -424,19 +410,53 @@
                 .data=${{ name: this.getCurrentProject().name, type: "folder", files }}
                 .nest=${0}
                 @select=${({detail:file})=>{
-                  alert(JSON.stringify(file, null, 2));
+                  this.updateProjects(()=>{
+                    const pro = this.getCurrentProject();
+                    if(!pro.tabs.includes(file.id)){
+                      pro.tabs.push(file.id);
+                    }
+                    pro.opened = file.id;
+                  });
+                  this.requestUpdate();
                 }}
               ></tree-file>
             </div>
           </div>
         `
       }
+      fileTabs(){
+        const pro = this.getCurrentProject();
+        return html`
+        <div class="row file_tabs">
+          <button
+            class="centering filelist_open_button"
+            @click=${e => { this.files_opened = !this.files_opened }}
+          >📁</button>
+          ${pro.tabs.map(id => html`
+            <div class="row file_tab ${pro.opened === id ? "open" : ""}">
+              <span>${this.findFileById(id).name}</span>
+              <div class="centering close_button">×</div>
+            </div>
+          `)}
+        </div>
+        `;
+      }
 
       getCurrentProject() {
-        return this.projects.find(({ id }) => id === this.ctx.project);
+        let pro = this.projects.find(({ id }) => id === this.ctx.project);
+        if(pro){
+          return pro;
+        }
+        pro = this.projects[0];
+        this.ctx.project = this.projects[0].id;
+        return pro;
       }
-      getCurrentFile() {
-        return this.getCurrentProject().files[this.ctx.opened];
+      findFileById(id) {
+        return this.getCurrentProject().files.find(f=>f.id === id);
+      }
+      getOpenedFile() {
+        const pro = this.getCurrentProject();
+        return pro.files.find(f=>f.id===pro.opened);
       }
 
       render() {
@@ -453,22 +473,11 @@
             <div class="grow" style="position:relative;">
               <split-panel id="container" class="fill" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
                 <div slot=0 class="fill col">
-                  <div class="row file_tabs">
-                      <button
-                        class="centering filelist_open_button"
-                        @click=${e => { this.files_opened = !this.files_opened }}
-                      >📁</button>
-                      ${this.ctx.tabs.map(id => html`
-                        <div class="row file_tab ${this.ctx.opened === id ? "open" : ""}">
-                          <span>${this.getCurrentProject().files[id].name}</span>
-                          <div class="centering close_button">×</div>
-                        </div>
-                      `)}
-                  </div>
+                  ${this.fileTabs()}
                   <div class="grow" style="position:relative;">
-                    <monaco-editor .filename=${this.getCurrentFile().name} .value=${this.getCurrentFile().value} id="input" class="fill" @input=${e => {
+                    <monaco-editor .filename=${this.getOpenedFile().name} .value=${this.getOpenedFile().value} id="input" class="fill" @input=${e => {
                       this.updateProjects(ps => {
-                        this.getCurrentFile().value = e.target.value;
+                        this.getOpenedFile().value = e.target.value;
                       });
                       this.updater.push(this.config.refresh_wait, {
                         value: e.target.value,
@@ -484,12 +493,12 @@
                       });
                     }}></label>
                     <button id="run" @click=${e => {
-                      this.updater.force({ value: this.getCurrentFile().value });
+                      this.updater.force({ value: this.getOpenedFile().value });
                     }}>RUN</button>
                   </div>
                 </div>
                 <div slot=1 class="fill">
-                  <demo-view id="demo-view" class="fill" slot=1 .content=${this.getCurrentFile().value}></demo-view>
+                  <demo-view id="demo-view" class="fill" slot=1 .content=${this.getOpenedFile().value}></demo-view>
                 </div>
               </split-panel>
               ${(this.menu_opened ? () => this.projectList() : () => "")()}
