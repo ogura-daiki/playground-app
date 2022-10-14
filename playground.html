@@ -867,7 +867,7 @@
     customElements.define("split-panel", Split);
 
     const getLanguageFromFileName = fileName => {
-      const ext = fileName.match(/\.([^.]+)$/)[1];
+      const ext = fileName.match(/\.(?<ext>[^.]+)$/)?.groups.ext;
       const list = {
         html:"html",
         htm:"html",
