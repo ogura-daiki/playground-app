@@ -410,19 +410,40 @@
                 .data=${{ name: this.getCurrentProject().name, type: "folder", files }}
                 .nest=${0}
                 @select=${({detail:file})=>{
-                  this.updateProjects(()=>{
-                    const pro = this.getCurrentProject();
-                    if(!pro.tabs.includes(file.id)){
-                      pro.tabs.push(file.id);
-                    }
-                    pro.opened = file.id;
-                  });
-                  this.requestUpdate();
+                  this.openTab(this.getCurrentProject(), file.id);
                 }}
               ></tree-file>
             </div>
           </div>
         `
+      }
+      openTab(pro, id){
+        this.updateProjects(()=>{
+          if(!pro.tabs.includes(id)){
+            pro.tabs.push(id);
+          }
+          pro.opened = id;
+        });
+        this.requestUpdate();
+      }
+      selectTab(pro,id){
+        this.updateProjects(()=>{
+          pro.opened = id;
+        });
+        this.requestUpdate();
+      }
+      closeTab(pro, id){
+        if(pro.tabs.length <= 1){
+          return;
+        }
+        const idx = pro.tabs.findIndex(tab=>tab===id);
+        this.updateProjects(()=>{
+          pro.tabs.splice(idx, 1);
+          if(pro.opened === id){
+            pro.opened = pro.tabs[idx-1]??pro.tabs[idx];
+          }
+        });
+        this.requestUpdate();
       }
       fileTabs(){
         const pro = this.getCurrentProject();
@@ -432,23 +453,15 @@
             class="centering filelist_open_button"
             @click=${e => { this.files_opened = !this.files_opened }}
           >📁</button>
-          ${pro.tabs.map((id, idx) => html`
+          ${pro.tabs.map((id) => html`
             <div class="row file_tab ${pro.opened === id ? "open" : ""}"
-              @click=${e=>{
-                this.updateProjects(()=>{
-                  pro.opened = id;
-                });
-                this.requestUpdate();
-              }}
+              @click=${e=>this.selectTab(pro, id)}
             >
               <span>${this.findFileById(id).name}</span>
               <div
                 class="centering close_button"
                 @click=${e=>{
-                  this.updateProjects(()=>{
-                    pro.tabs.splice(idx, 1);
-                  });
-                  this.requestUpdate();
+                  this.closeTab(pro, id);
                   e.stopPropagation();
                 }}
               >×</div>
