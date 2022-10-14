@@ -405,49 +405,8 @@
         `
       }
       fileList() {
-        //const files = this.getCurrentProject().files;
-        const files = [
-          {
-            id:0,
-            type: "file",
-            name: "index.html",
-            value: "1",
-          },
-          {
-            type: "folder",
-            name: "test",
-            value: "",
-            files: [
-              {
-                type: "file",
-                name: "index.css",
-                value: "2",
-              },
-              {
-                type: "folder",
-                name: "test2",
-                value: "",
-                files: [
-                  {
-                    type: "file",
-                    name: "index.js",
-                    value: "3",
-                  },
-                  {
-                    type: "file",
-                    name: "index2.rb",
-                    value: "4",
-                  },
-                ],
-              },
-              {
-                type: "file",
-                name: "index2.html",
-                value: "5",
-              },
-            ],
-          },
-        ];
+        const files = this.getCurrentProject().files;
+
         return html`
           <div class="col fill files_area">
             <div class="title">ファイル一覧</div>
