@@ -441,9 +441,13 @@
               position:sticky;
               top:0px;
               background: rgba( 47, 47, 47, 0.85 );
+              padding:4px 12px;
             }
             .files_area .files{
               padding:8px 4px;
+            }
+            .files_area .files *:where(.folder, .file){
+              box-shadow: rgba(255,255,255,.2) 0px 1px 0px 0px;
             }
             .files_area .files *:where(.folder, .file):hover{
               background:rgba(255,255,255,.2);
@@ -452,6 +456,22 @@
               font-family:monospace;
               font-weight:bold;
               transition:transform .1s;
+            }
+            .files_area .files .menu_button{
+              border:0px;
+              margin:0px;
+              padding:0px;
+              background:transparent;
+              border-radius:.2em;
+              color:white;
+              width:2em;
+              aspect-ratio:1;
+            }
+            .files_area .files .menu_button:where(:hover, :active){
+              background:rgba(255,255,200,.2);
+            }
+            .files_area .files .menu_button i{
+              font-size:1.4em;
             }
           `
         ];
@@ -718,7 +738,7 @@
       padLeft(){
         if(!this.nest) return "";
         return html`
-        <div class="row" style="gap:4px;margin-left:-0em;">
+        <div class="row" style="gap:4px;align-self:stretch">
           ${[...Array(this.nest)].map(() => html`
             <div style="width:.5em;box-sizing:border-box;border-right:solid white 1px"></div>
           `)}
@@ -730,7 +750,7 @@
         return html`
         <div
           class="${this.data.type} row"
-          style="gap:4px;padding-right:8px;"
+          style="gap:4px;padding-right:8px;align-items: center;"
           @click=${e => {
             if (this.data.type === "folder") {
               this.open = !this.open;
@@ -744,13 +764,13 @@
             ${this.getIcon()}
           </div>
           <span>${this.data.name}</span>
-          <div class="row" style="margin-left:auto;gap:4px" @click=${e=>{
+          <div class="row" style="margin-left:auto;gap:2px" @click=${e=>{
             e.stopPropagation();
             e.preventDefault();
             return false;
           }}>
             ${this.nest?html`
-              <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
+              <button class="centering menu_button" @click=${e=>{
                 const name = prompt({folder:"フォルダ",file:"ファイル"}[this.data.type]+"名を変更", this.data.name)?.trim();
                 if(name){
                   this.dispatchEvent(new CustomEvent("rename", {
@@ -762,8 +782,8 @@
                     bubbles:true,
                   }));
                 }
-              }}>リネーム</button>
-              <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
+              }}><i>drive_file_rename_outline</i></button>
+              <button class="centering menu_button" @click=${e=>{
                 this.dispatchEvent(new CustomEvent("delete", {
                   detail:{
                     files:this.parent.files,
@@ -771,10 +791,10 @@
                   },
                   bubbles:true,
                 }));
-              }}>削除</button>
+              }}><i>delete</i></button>
             `:""}
             ${this.data.type==="folder"?html`
-              <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
+              <button class="centering menu_button" @click=${e=>{
                 const name = prompt("ファイル名を入力")?.trim();
                 if(name){
                   this.dispatchEvent(new CustomEvent("create", {
@@ -784,8 +804,8 @@
                     }
                   }));
                 }
-              }}>ファイル</button>
-              <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
+              }}><i>note_add</i></button>
+              <button class="centering menu_button" @click=${e=>{
                 const name = prompt("フォルダ名を入力")?.trim();
                 if(name){
                   this.dispatchEvent(new CustomEvent("create", {
@@ -795,7 +815,7 @@
                     }
                   }));
                 }
-              }}>フォルダ</button>
+              }}><i>create_new_folder</i></button>
             `:""}
           </div>
         </div>
