@@ -139,6 +139,44 @@
   <script type="module">
     import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
 
+    window.iconFonts = css`
+    /**
+    * アイコンフォント定義
+    */
+    @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200");
+    /* クラス指定が長いので iタグで代替 */
+    i {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+    i {
+      font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 48;
+      /*font-size:1.5em;*/
+      user-select:none;
+      margin-top: -0.05em;
+    }
+    `;
+    document.head.append(Object.assign(document.createElement("style"),{textContent:iconFonts}))
+    class BaseElement extends LitElement{
+      static get styles(){
+        return iconFonts;
+      }
+    }
     const debounce = func => {
       let timer;
       return {
@@ -160,7 +198,7 @@
       return project.files.find(file=>file.id===project.entryFile).value;
     }
 
-    class PlayGroundApp extends LitElement {
+    class PlayGroundApp extends BaseElement {
       static get properties() {
         return {
           config: { type: Object },
@@ -193,213 +231,227 @@
         }, false);
       }
       static get styles() {
-        return css`
-          :host{
-            display:block;
-          }
-          #container {
-            background: #fff;
-            gap: 4px;
-          }
+        return [
+          super.styles,
+          css`
+            :host{
+              display:block;
+            }
+            #container {
+              background: #fff;
+              gap: 4px;
+            }
 
-          #input {
-          }
+            #input {
+            }
 
-          #ig {
-            background: #eee;
-          }
+            #ig {
+              background: #eee;
+            }
 
-          .fill {
-            width: 100%;
-            height: 100%;
-            box-sizing:border-box;
-          }
+            .fill {
+              width: 100%;
+              height: 100%;
+              box-sizing:border-box;
+            }
 
-          .col, .row{
-            display:flex;
-          }
-          .col{
-            flex-flow:column;
-          }
-          .row{
-            flex-flow:row;
-          }
+            .col, .row{
+              display:flex;
+            }
+            .col{
+              flex-flow:column;
+            }
+            .row{
+              flex-flow:row;
+            }
 
-          .grow{
-            flex-grow:1;
-            flex-basis:0px;
-          }
+            .grow{
+              flex-grow:1;
+              flex-basis:0px;
+            }
 
-          .centering{
-            display:grid;
-            place-items:center;
-          }
+            .centering{
+              display:grid;
+              place-items:center;
+            }
 
-          .top_menu{
-            display:block;
-            padding:4px 12px;
-            width:52px;
-            background:transparent;
-            border-right:1px solid lightgray;
-          }
-          .menu_icon{
-            position:relative;
-            aspect-ratio:1;
-            width:100%;
-            --stroke-color:white;
-            --stroke-width:3px;
-            transition:transform .3s;
-          }
-          .menu_icon:before, .menu_icon:after{
-            content:"";
-            display:block;
-            width:100%;
-          }
-          .menu_icon:before{
-            border:solid var(--stroke-color);
-            border-width:var(--stroke-width) 0px;
-            box-sizing:border-box;
-            height:60%;
-            transition:height .3s, background .3s, transform .3s, border .3s;
-          }
-          .menu_icon:after{
-            height:var(--stroke-width);
-            background:var(--stroke-color);
-            position:absolute;
-            top:calc(50% - var(--stroke-width) / 2 );
-            left:0%;
-            transition:transform .3s;
-          }
+            .top_menu{
+              display:block;
+              padding:4px 12px;
+              width:52px;
+              background:transparent;
+              border-right:1px solid lightgray;
+            }
+            .menu_icon{
+              position:relative;
+              aspect-ratio:1;
+              width:100%;
+              --stroke-color:white;
+              --stroke-width:3px;
+              transition:transform .3s;
+            }
+            .menu_icon:before, .menu_icon:after{
+              content:"";
+              display:block;
+              width:100%;
+            }
+            .menu_icon:before{
+              border:solid var(--stroke-color);
+              border-width:var(--stroke-width) 0px;
+              box-sizing:border-box;
+              height:60%;
+              transition:height .3s, background .3s, transform .3s, border .3s;
+            }
+            .menu_icon:after{
+              height:var(--stroke-width);
+              background:var(--stroke-color);
+              position:absolute;
+              top:calc(50% - var(--stroke-width) / 2 );
+              left:0%;
+              transition:transform .3s;
+            }
 
-          .open .menu_icon{
-            transform:rotateZ(180deg);
-          }
-          .open .menu_icon:before{
-            height:var(--stroke-width);
-            background:white;
-            border-width:0px;
-            border-color:transparent;
-            transform:rotateZ(45deg);
-          }
-          .open .menu_icon:after{
-            transform:rotateZ(-45deg);
-          }
+            .open .menu_icon{
+              transform:rotateZ(180deg);
+            }
+            .open .menu_icon:before{
+              height:var(--stroke-width);
+              background:white;
+              border-width:0px;
+              border-color:transparent;
+              transform:rotateZ(45deg);
+            }
+            .open .menu_icon:after{
+              transform:rotateZ(-45deg);
+            }
 
-          .code_area{
-            position:relative;
-            background:black;
-            color:white;
-          }
-          .code_area .no_opened_file{
-            font-size:.5em;
-            user-select:none;
-            aspect-ratio:1;
-            background:rgba(255,255,255,.5);
-            padding:16px;
-            border-radius:16px;
-          }
+            .code_area{
+              position:relative;
+              background:black;
+              color:white;
+            }
+            .code_area .no_opened_file{
+              font-size:.5em;
+              user-select:none;
+              aspect-ratio:1;
+              background:rgba(255,255,255,.5);
+              padding:16px;
+              border-radius:16px;
+            }
 
-          .projects_area{
-            position:absolute;
-            top:0px;
-            left:0px;
-            overflow-y:scroll;
-            z-index:99999;
-            background:white;
-          }
-          .projects_area .title{
-            position:sticky;
-            top:0px;
-            background:white;
-            padding:4px;
-            font-size:1.5em;
-          }
-          .projects_area .projects{
-            gap:8px;
-            padding:8px;
-          }
+            .projects_area{
+              position:absolute;
+              top:0px;
+              left:0px;
+              overflow-y:scroll;
+              z-index:99999;
+              background:white;
+            }
+            .projects_area .title{
+              position:sticky;
+              top:0px;
+              background:white;
+              padding:4px;
+              font-size:1.5em;
+            }
+            .projects_area .projects{
+              gap:8px;
+              padding:8px;
+            }
 
-          .file_tabs{
-            padding-right:8px;
-            overflow-x:overlay;
-            background:darkslateblue;
-          }
+            .file_tabs{
+              padding-right:8px;
+              overflow-x:overlay;
+              background:darkslateblue;
+            }
 
-          .file_tabs::-webkit-scrollbar {
-            height:4px;
-          }
-          /*スクロールバーの軌道*/
-          .file_tabs::-webkit-scrollbar-track {
-            border-radius: 10px;
-            box-shadow: inset 0 0 6px rgba(0, 0, 0, .1);
-          }
+            .file_tabs::-webkit-scrollbar {
+              height:4px;
+            }
+            /*スクロールバーの軌道*/
+            .file_tabs::-webkit-scrollbar-track {
+              border-radius: 10px;
+              box-shadow: inset 0 0 6px rgba(0, 0, 0, .1);
+            }
 
-          /*スクロールバーの動く部分*/
-          .file_tabs::-webkit-scrollbar-thumb {
-            background-color: rgba(200,200,200, .5);
-            border-radius: 10px;
-            box-shadow:0 0 0 1px rgba(255, 255, 255, .3);
-          }
-          .filelist_open_button{
-            position:sticky;
-            left:0px;
-            aspect-ratio:1;
-            font-size:1.5em;
-            padding:0px;
-            user-select:none;
-          }
-          .file_tab{
-            padding:4px;
-            gap:8px;
-            align-items:center;
-            border-right:1px solid lightgray;
-            color:white;
-          }
-          .file_tab.open{
-            background:black;
-          }
-          .file_tab .close_button{
-            width:1.5em;
-            aspect-ratio:1;
-            border-radius:.2em;
-            user-select:none;
-          }
-          .file_tab .close_button:where(:hover, :open){
-            background:rgba(255,255,200,.5)
-          }
+            /*スクロールバーの動く部分*/
+            .file_tabs::-webkit-scrollbar-thumb {
+              background-color: rgba(200,200,200, .5);
+              border-radius: 10px;
+              box-shadow:0 0 0 1px rgba(255, 255, 255, .3);
+            }
+            .filelist_open_button{
+              position:sticky;
+              left:0px;
+              aspect-ratio:1;
+              padding:0px;
+              user-select:none;
+              width:3em;
+              outline:none;
+              border:none;
+              background:darkslateblue;
+              border-right:1px solid white;
+            }
+            .filelist_open_button:where(:hover, :active){
+              background:rgb(100,100,140);
+            }
+            .filelist_open_button i{
+              font-size:2em;
+              color:white;
+            }
+            .file_tab{
+              padding:4px;
+              gap:8px;
+              align-items:center;
+              border-right:1px solid lightgray;
+              color:white;
+            }
+            .file_tab.open{
+              background:black;
+            }
+            .file_tab .close_button{
+              width:1.5em;
+              aspect-ratio:1;
+              border-radius:.2em;
+              user-select:none;
+            }
+            .file_tab .close_button:where(:hover, :open){
+              background:rgba(255,255,200,.5)
+            }
 
-          .files_area{
-            overflow-y:scroll;
-            position:absolute;
-            top:0px;
-            left:0px;
-            user-select:none;
-            /*ガラス調に*/
-            background: rgba( 47, 47, 47, 0.6 );
-            /*box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );*/
-            backdrop-filter: blur( 2px );
-            -webkit-backdrop-filter: blur( 2px );
-            border: 1px solid rgba( 255, 255, 255, 0.18 );
-            color:white;
-          }
-          .files_area .title{
-            font-size:1.5em;
-            position:sticky;
-            top:0px;
-            background: rgba( 47, 47, 47, 0.85 );
-          }
-          .files_area .files{
-            padding:8px 4px;
-          }
-          .files_area .files *:where(.folder, .file):hover{
-            background:rgba(255,255,255,.2);
-          }
-          .files_area .files .folder .folder_arrow{
-            font-family:monospace;
-            font-weight:bold;
-            transition:transform .1s;
-          }
-        `;
+            .files_area{
+              overflow-y:scroll;
+              position:absolute;
+              top:0px;
+              left:0px;
+              user-select:none;
+              /*ガラス調に*/
+              background: rgba( 47, 47, 47, 0.6 );
+              /*box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );*/
+              backdrop-filter: blur( 2px );
+              -webkit-backdrop-filter: blur( 2px );
+              border: 1px solid rgba( 255, 255, 255, 0.18 );
+              color:white;
+            }
+            .files_area .title{
+              font-size:1.5em;
+              position:sticky;
+              top:0px;
+              background: rgba( 47, 47, 47, 0.85 );
+            }
+            .files_area .files{
+              padding:8px 4px;
+            }
+            .files_area .files *:where(.folder, .file):hover{
+              background:rgba(255,255,255,.2);
+            }
+            .files_area .files .folder .folder_arrow{
+              font-family:monospace;
+              font-weight:bold;
+              transition:transform .1s;
+            }
+          `
+        ];
       }
       projectList() {
         return html`
@@ -517,7 +569,7 @@
           <button
             class="centering filelist_open_button"
             @click=${e => { this.files_opened = !this.files_opened }}
-          >📁</button>
+          ><i>file_copy</i></button>
           ${pro.tabs.map((id) => html`
             <div class="row file_tab ${pro.opened === id ? "open" : ""}"
               @click=${e=>this.selectTab(pro, id)}
@@ -629,7 +681,7 @@
     customElements.define("playground-app", PlayGroundApp);
     document.body.append(new PlayGroundApp());
 
-    customElements.define("tree-file", class extends LitElement {
+    customElements.define("tree-file", class extends BaseElement {
       static get properties() {
         return {
           nest: { type: Number },
