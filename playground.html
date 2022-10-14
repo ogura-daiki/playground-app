@@ -18,6 +18,7 @@
       padding: 0px;
     }
   </style>
+  <script src="https://unpkg.com/monaco-editor@latest/min/vs/loader.js"></script>
 </head>
 
 <body>
@@ -212,10 +213,6 @@
           }
 
           #input {
-            background: #000;
-            color: #aaa;
-            overflow: scroll;
-            resize: none;
           }
 
           #ig {
@@ -495,7 +492,7 @@
                       <div></div>
                   </div>
                   <div class="grow" style="position:relative;">
-                    <textarea id="input" class="fill" @input=${e => {
+                    <monaco-editor .language=${"html"} .value=${this.getCurrentFile().value} id="input" class="fill" @input=${e => {
                       this.updateProjects(ps => {
                         this.getCurrentFile().value = e.target.value;
                       });
@@ -503,7 +500,7 @@
                         value: e.target.value,
                         auto_refresh: this.config.auto_refresh
                       });
-                    }}>${this.getCurrentFile().value}</textarea>
+                    }}></monaco-editor>
                     ${(this.files_opened ? () => this.fileList() : () => "")()}
                   </div>
                   <div>
@@ -814,6 +811,81 @@
     }
 
     customElements.define("split-panel", Split);
+
+    
+    require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@latest/min/vs' }});
+    const proxy = URL.createObjectURL(new Blob([`
+      self.MonacoEnvironment = {
+        baseUrl: 'https://unpkg.com/monaco-editor@latest/min/'
+      };
+      importScripts('https://unpkg.com/monaco-editor@latest/min/vs/base/worker/workerMain.js');
+    `], { type: 'text/javascript' }));
+    window.MonacoEnvironment = { getWorkerUrl: () => proxy };
+    const loadEditor = new Promise(resolve=>{require(["vs/editor/editor.main"], resolve)});
+
+    class MonacoEditor extends LitElement{
+      static get properties(){
+        return {
+          language:{type:String},
+          theme:{type:String},
+        };
+      }
+      #value;
+      #editor;
+      constructor(){
+        super();
+        this.#value="";
+        this.language="javascript";
+        this.theme="vs-dark";
+      }
+      static get styles(){
+        return css`
+          :host{
+            display:block;
+          }
+          #editor{
+            display:block;
+            position:absolute;
+            top:0px;
+            left:0px;
+            margin:0px;
+            padding:0px;
+            width:100%;
+            height:100%;
+            overflow:hidden;
+          }
+        `;
+      }
+      render(){
+        return html`
+        <link rel="stylesheet" href="https://unpkg.com/monaco-editor@0.34.0/min/vs/editor/editor.main.css"></link>
+        <div id=editor></div>
+        `
+      }
+      updated() {
+        loadEditor.then(e=>{
+          if(this.#editor){
+            console.log(this.#editor)
+            this.#editor.getModel().setValue(this.value);
+            monaco.editor.setModelLanguage(this.#editor.getModel(), this.language);
+            monaco.editor.setTheme(this.theme);
+            return;
+          }
+          this.#editor = monaco.editor.create(this.renderRoot.querySelector("#editor"), {
+            value: this.value,
+            language: this.language,
+            theme: this.theme,
+            automaticLayout: true,
+          });
+          this.#editor.getModel().onDidChangeContent((event) => {
+            console.log(this.#editor.getValue())
+            this.value = this.#editor.getValue();
+            this.dispatchEvent(new Event("input"))
+          });
+        });
+      }
+    }
+    customElements.define("monaco-editor", MonacoEditor);
   </script>
 
 
