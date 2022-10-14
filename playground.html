@@ -41,6 +41,7 @@
         files: [index],
         opened:index.id,
         tabs:[index.id],
+        entryFile: index.id,
       }
     };
     window.newProject = newProject;
@@ -430,9 +431,24 @@
                   }
                   this.updateProjects(()=>{
                     files.push(value);
-                    console.log(files);
                   });
                   this.requestUpdate();
+                }}
+                @delete=${({detail:{files,file}})=>{
+                  const pro = this.getCurrentProject();
+                  if(file.id === pro.entryFile){
+                    alert("初期ファイルは削除できません");
+                    return;
+                  }
+                  if(confirm({folder:"フォルダ",file:"ファイル"}[file.type]+`名：${file.name}を削除してもよろしいですか？`)){
+                    this.updateProjects(()=>{
+                      if(pro.tabs.includes(file.id)){
+                        this.closeTab(pro, file.id);
+                      }
+                      files.splice(files.findIndex(v=>v===file),1);
+                    });
+                    this.requestUpdate();
+                  }
                 }}
               ></tree-file>
             </div>
@@ -655,6 +671,15 @@
                   }));
                 }
               }}>リネーム</button>
+              <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
+                this.dispatchEvent(new CustomEvent("delete", {
+                  detail:{
+                    files:this.parent.files,
+                    file:this.data,
+                  },
+                  bubbles:true,
+                }));
+              }}>削除</button>
             `:""}
             ${this.data.type==="folder"?html`
               <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
