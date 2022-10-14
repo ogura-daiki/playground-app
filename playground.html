@@ -395,11 +395,15 @@
             <div class="grow col projects">
               ${this.projects.map(({ id, name }) => html`
                 <div
-                  style="padding:4px;background:lightgray;"
+                  style="padding:4px;background:${this.ctx.project===id?"yellow":"lightgray"};"
                   @click=${e=>{
+                    if(this.ctx.project === id){
+                      return;
+                    }
                     this.updateCtx(ctx=>{
                       ctx.project = id;
                     });
+                    this.menu_opened = false;
                     this.requestUpdate();
                   }}
                 >${name}</div>
