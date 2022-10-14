@@ -382,7 +382,11 @@
           .files_area .files *:where(.folder, .file):hover{
             background:rgba(255,255,255,.2);
           }
-          
+          .files_area .files .folder .folder_arrow{
+            font-family:monospace;
+            font-weight:bold;
+            transition:transform .1s;
+          }
         `;
       }
       projectList() {
@@ -418,7 +422,7 @@
             files: [
               {
                 type: "file",
-                name: "index.html",
+                name: "index.css",
                 value: "2",
               },
               {
@@ -428,12 +432,12 @@
                 files: [
                   {
                     type: "file",
-                    name: "index.html",
+                    name: "index.js",
                     value: "3",
                   },
                   {
                     type: "file",
-                    name: "index2.html",
+                    name: "index2.css",
                     value: "4",
                   },
                 ],
@@ -551,11 +555,23 @@
       }
       constructor() {
         super();
-        this.data = { name: "" };
+        this.data = { name: "temp.html" };
         this.nest = 0;
         this.open = false;
       }
       createRenderRoot() { return this; }
+      getIcon(){
+        if(this.data.type === "folder"){
+          return html`<div class="folder_arrow" style="transform:rotateZ(${this.open ? "90" : "0"}deg);">&gt;</div>`;
+        }
+        
+        const lang = getLanguageFromFileName(this.data.name);
+        return {
+          html:html`<span class="icon" style="font-size:0.5em;color:salmon">&lt;&gt;</span>`,
+          css:html`<span class="icon" style="font-size:0.8em;color:skyblue">#</span>`,
+          javascript:html`<span class="icon" style="font-size:0.5em;color:yellow">JS</span>`,
+        }[lang];
+      }
       render() {
         this.style.display = "contents";
         return html`
@@ -578,10 +594,7 @@
           </div>
           `: ""}
           <div class="centering" style="width:1em;">
-            ${this.data.type === "file"
-              ? html`<span style="font-size:.5em;">&lt;&gt;</span>`
-              : html`<div style="font-family:monospace;font-weight:bold;transition:transform .1s;transform:rotateZ(${this.open ? "90" : "0"}deg);">&gt;</div>`
-            }
+            ${this.getIcon()}
           </div>
           <span>${this.data.name}</span>
         </div>
