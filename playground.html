@@ -25,7 +25,7 @@
   <script>
 
     //ほぼほぼ重複しないIDを生成
-    const createProjectId = ()=>`${Date.now()}-${crypto.randomUUID()}`;
+    const createProjectId = () => `${Date.now()}-${crypto.randomUUID()}`;
     window.createProjectId = createProjectId;
     const initialProjectId = createProjectId();
 
@@ -35,9 +35,9 @@
           v: 0,
           up: () => {
             return {
-              layout:1,
-              refresh_wait:1000,
-              auto_refresh:false,
+              layout: 1,
+              refresh_wait: 1000,
+              auto_refresh: false,
             };
           }
         },
@@ -45,9 +45,9 @@
       "ctx": [
         {
           v: 0,
-          up: () =>{
+          up: () => {
             return {
-              value:"",
+              value: "",
             }
           }
         },
@@ -55,15 +55,15 @@
           v: 1,
           up: () => {
             return {
-              project:initialProjectId,
-              opened:0,
+              project: initialProjectId,
+              opened: 0,
             }
           }
         },
         {
           v: 2,
           up: (obj) => {
-            obj.tabs=[obj.opened];
+            obj.tabs = [obj.opened];
             return obj;
           }
         },
@@ -74,13 +74,13 @@
           up: () => {
             return [
               {
-                id:initialProjectId,
-                name:"新規プロジェクト",
-                files:[
+                id: initialProjectId,
+                name: "新規プロジェクト",
+                files: [
                   {
-                    id:0,
-                    path:"index.html",
-                    value:"",
+                    id: 0,
+                    path: "index.html",
+                    value: "",
                   }
                 ],
               }
@@ -91,10 +91,10 @@
     };
 
     const store = {
-      get(key){
+      get(key) {
         return JSON.parse(localStorage.getItem(key));
       },
-      set(key, value){
+      set(key, value) {
         return localStorage.setItem(key, JSON.stringify(value));
       },
     };
@@ -132,7 +132,7 @@
     }
 
     window.Store = Object.freeze(Object.assign(Object.create(null), {
-      get:getValue, set:setValue,
+      get: getValue, set: setValue,
     }));
 
   </script>
@@ -140,19 +140,19 @@
   <script type="module">
     import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
 
-    const newProject = ()=>({
-      id:createProjectId(),
-      name:`新規プロジェクト[${new Intl.DateTimeFormat('ja-JP', { dateStyle: 'short', timeStyle: 'short' }).format(Date.now())}]`,
-      files:[
+    const newProject = () => ({
+      id: createProjectId(),
+      name: `新規プロジェクト[${new Intl.DateTimeFormat('ja-JP', { dateStyle: 'short', timeStyle: 'short' }).format(Date.now())}]`,
+      files: [
         {
-          id:0,
-          path:"index.html",
-          value:"",
+          id: 0,
+          path: "index.html",
+          value: "",
         }
       ],
     });
 
-    const debounce = func=>{
+    const debounce = func => {
       let timer;
       return {
         clear: () => {
@@ -160,7 +160,7 @@
         },
         push(time, props) {
           this.clear();
-          timer = setTimeout(()=>func(false, props), time);
+          timer = setTimeout(() => func(false, props), time);
         },
         force(props) {
           this.clear();
@@ -170,19 +170,19 @@
     }
 
     class PlayGroundApp extends LitElement {
-      static get properties(){
+      static get properties() {
         return {
-          config:{type:Object},
-          ctx:{type:Object},
-          projects:{type:Array},
-          menu_opened:{type:Boolean},
-          files_opened:{type:Boolean},
+          config: { type: Object },
+          ctx: { type: Object },
+          projects: { type: Array },
+          menu_opened: { type: Boolean },
+          files_opened: { type: Boolean },
         };
       }
-      constructor(){
+      constructor() {
         super();
-        this.updater = debounce((force, {value, auto_refresh}) => {
-          if(force || auto_refresh){
+        this.updater = debounce((force, { value, auto_refresh }) => {
+          if (force || auto_refresh) {
             this.renderRoot.querySelector("#demo-view").content = value;
           }
         });
@@ -194,14 +194,14 @@
 
         window.addEventListener("message", (event) => {
           this.renderRoot.getElementById("demo-view").sendMessage({
-            type:"styles",
-            value:{
-              "test.css":`body{background:green}`,
+            type: "styles",
+            value: {
+              "test.css": `body{background:green}`,
             }
           });
         }, false);
       }
-      static get styles(){
+      static get styles() {
         return css`
           :host{
             display:block;
@@ -387,62 +387,62 @@
           
         `;
       }
-      projectList(){
+      projectList() {
         return html`
           <div class="fill col projects_area">
-            <div class="title">プロジェクト一覧<button style="margin-left:auto;" @click=${e=>{
-              this.updateProjects(ps=>{
+            <div class="title">プロジェクト一覧<button style="margin-left:auto;" @click=${e => {
+              this.updateProjects(ps => {
                 ps.push(newProject());
               });
               this.requestUpdate();
             }}>+</button></div>
             <div class="grow col projects">
-              ${this.projects.map(({name})=>html`
+              ${this.projects.map(({ name }) => html`
                 <div style="padding:4px;background:lightgray;">${name}</div>
               `)}
             </div>
           </div>
         `
       }
-      fileList(){
+      fileList() {
         //const files = this.getCurrentProject().files;
         const files = [
           {
-            type:"file",
-            name:"index.html",
-            value:"1",
+            type: "file",
+            name: "index.html",
+            value: "1",
           },
           {
-            type:"folder",
-            name:"test",
-            value:"",
-            files:[
+            type: "folder",
+            name: "test",
+            value: "",
+            files: [
               {
-                type:"file",
-                name:"index.html",
-                value:"2",
+                type: "file",
+                name: "index.html",
+                value: "2",
               },
               {
-                type:"folder",
-                name:"test2",
-                value:"",
-                files:[
+                type: "folder",
+                name: "test2",
+                value: "",
+                files: [
                   {
-                    type:"file",
-                    name:"index.html",
-                    value:"3",
+                    type: "file",
+                    name: "index.html",
+                    value: "3",
                   },
                   {
-                    type:"file",
-                    name:"index2.html",
-                    value:"4",
+                    type: "file",
+                    name: "index2.html",
+                    value: "4",
                   },
                 ],
               },
               {
-                type:"file",
-                name:"index2.html",
-                value:"5",
+                type: "file",
+                name: "index2.html",
+                value: "5",
               },
             ],
           },
@@ -451,30 +451,30 @@
           <div class="col fill files_area">
             <div class="title">ファイル一覧</div>
             <div class="col files">
-              <tree-file .data=${{name:"root", type:"folder", files}} .nest=${0}></tree-file>
+              <tree-file .data=${{ name: "root", type: "folder", files }} .nest=${0}></tree-file>
             </div>
           </div>
         `
       }
 
-      getCurrentProject(){
-        return this.projects.find(({id})=>id===this.ctx.project);
+      getCurrentProject() {
+        return this.projects.find(({ id }) => id === this.ctx.project);
       }
-      getCurrentFile(){
+      getCurrentFile() {
         return this.getCurrentProject().files[this.ctx.opened];
       }
-      getFileName(file){
+      getFileName(file) {
         return file.path.split("/").pop();
       }
 
-      render(){
+      render() {
         return html`
           <div class="col fill">
             <div class="top_bar row" style="background:darkblue;">
-              <button class="top_menu ${this.menu_opened?"open":""}" @click=${e=>this.menu_opened = !this.menu_opened}>
+              <button class="top_menu ${this.menu_opened ? "open" : ""}" @click=${e => this.menu_opened = !this.menu_opened}>
                 <div class="menu_icon centering"></div>
               </button>
-              <input type="text" .value=${this.getCurrentProject().name} @input=${e=>this.updateProjects(()=>{
+              <input type="text" .value=${this.getCurrentProject().name} @input=${e => this.updateProjects(() => {
                 this.getCurrentProject().name = e.target.value;
               })}>
             </div>
@@ -484,10 +484,10 @@
                   <div class="row file_tabs">
                       <button
                         class="centering filelist_open_button"
-                        @click=${e=>{this.files_opened = !this.files_opened}}
+                        @click=${e => { this.files_opened = !this.files_opened }}
                       >📁</button>
-                      ${this.ctx.tabs.map(id=>html`
-                        <div class="row file_tab ${this.ctx.opened===id?"open":""}">
+                      ${this.ctx.tabs.map(id => html`
+                        <div class="row file_tab ${this.ctx.opened === id ? "open" : ""}">
                           <span>${this.getFileName(this.getCurrentProject().files[id])}</span>
                           <span>×</span>
                         </div>
@@ -495,25 +495,25 @@
                       <div></div>
                   </div>
                   <div class="grow" style="position:relative;">
-                    <textarea id="input" class="fill" @input=${e=>{
-                      this.updateProjects(ps=>{
+                    <textarea id="input" class="fill" @input=${e => {
+                      this.updateProjects(ps => {
                         this.getCurrentFile().value = e.target.value;
                       });
                       this.updater.push(this.config.refresh_wait, {
-                        value:e.target.value,
-                        auto_refresh:this.config.auto_refresh
+                        value: e.target.value,
+                        auto_refresh: this.config.auto_refresh
                       });
                     }}>${this.getCurrentFile().value}</textarea>
-                    ${(this.files_opened?()=>this.fileList():()=>"")()}
+                    ${(this.files_opened ? () => this.fileList() : () => "")()}
                   </div>
                   <div>
-                    <label>自動反映<input type="checkbox" .checked=${this.config.auto_refresh} @input=${e=>{
-                      this.updateConfig(config=>{
+                    <label>自動反映<input type="checkbox" .checked=${this.config.auto_refresh} @input=${e => {
+                      this.updateConfig(config => {
                         config.auto_refresh = e.target.checked
                       });
                     }}></label>
-                    <button id="run" @click=${e=>{
-                      this.updater.force({value:this.getCurrentFile().value});
+                    <button id="run" @click=${e => {
+                      this.updater.force({ value: this.getCurrentFile().value });
                     }}>RUN</button>
                   </div>
                 </div>
@@ -521,23 +521,23 @@
                   <demo-view id="demo-view" class="fill" slot=1 .content=${this.getCurrentFile().value}></demo-view>
                 </div>
               </split-panel>
-              ${(this.menu_opened?()=>this.projectList():()=>"")()}
+              ${(this.menu_opened ? () => this.projectList() : () => "")()}
             </div>
           </div>
         `;
       }
 
-      updateCtx(func){
+      updateCtx(func) {
         func(this.ctx);
         Store.set("ctx", this.ctx);
       }
 
-      updateConfig(func){
+      updateConfig(func) {
         func(this.config);
         Store.set("config", this.config);
       }
 
-      updateProjects(func){
+      updateProjects(func) {
         func(this.projects);
         Store.set("projects", this.projects);
       }
@@ -545,76 +545,76 @@
     customElements.define("playground-app", PlayGroundApp);
     document.body.append(new PlayGroundApp());
 
-    customElements.define("tree-file", class extends LitElement{
-      static get properties(){
+    customElements.define("tree-file", class extends LitElement {
+      static get properties() {
         return {
-          nest:{type:Number},
-          data:{type:Object},
-          open:{type:Boolean},
+          nest: { type: Number },
+          data: { type: Object },
+          open: { type: Boolean },
         }
       }
-      constructor(){
+      constructor() {
         super();
-        this.data={name:""};
-        this.nest=0;
+        this.data = { name: "" };
+        this.nest = 0;
         this.open = false;
       }
-      createRenderRoot(){return this;}
-      render(){
-        this.style.display="contents";
+      createRenderRoot() { return this; }
+      render() {
+        this.style.display = "contents";
         return html`
         <div
           class="${this.data.type} row"
           style="gap:4px;padding-right:8px;"
-          @click=${e=>{
-            if(this.data.type==="folder"){
+          @click=${e => {
+            if (this.data.type === "folder") {
               this.open = !this.open;
               return;
             }
-            alert(JSON.stringify(this.data,null,2));
+            alert(JSON.stringify(this.data, null, 2));
           }}
         >
-          ${this.nest?html`
+          ${this.nest ? html`
           <div class="row" style="gap:4px;margin-left:-0em;">
-            ${[...Array(this.nest)].map(()=>html`
+            ${[...Array(this.nest)].map(() => html`
               <div style="width:.5em;box-sizing:border-box;border-right:solid white 1px"></div>
             `)}
           </div>
-          `:""}
+          `: ""}
           <div class="centering" style="width:1em;">
-            ${this.data.type==="file"
-              ?html`<span style="font-size:.5em;">&lt;&gt;</span>`
-              :html`<div style="font-family:monospace;font-weight:bold;transition:transform .1s;transform:rotateZ(${this.open?"90":"0"}deg);">&gt;</div>`
+            ${this.data.type === "file"
+              ? html`<span style="font-size:.5em;">&lt;&gt;</span>`
+              : html`<div style="font-family:monospace;font-weight:bold;transition:transform .1s;transform:rotateZ(${this.open ? "90" : "0"}deg);">&gt;</div>`
             }
           </div>
           <span>${this.data.name}</span>
         </div>
-        ${this.data.type==="folder"?html`
-        <div style="display:${this.open?"contents":"none"}">
-          ${this.data.files.map(e=>
-            html`<tree-file .data=${e} .nest=${this.nest+1}></tree-fi>`
+        ${this.data.type === "folder" ? html`
+        <div style="display:${this.open ? "contents" : "none"}">
+          ${this.data.files.map(e =>
+            html`<tree-file .data=${e} .nest=${this.nest + 1}></tree-fi>`
           )}
         </div>
-        `:""}
+        `: ""}
         `;
       }
     });
 
-    const styleLoader = async ()=>{
-      const styles = await new Promise(resolve=>{
-        window.addEventListener("message", ({data}) => {
-          if(data.type = "styles"){
+    const styleLoader = async () => {
+      const styles = await new Promise(resolve => {
+        window.addEventListener("message", ({ data }) => {
+          if (data.type = "styles") {
             resolve(data.value);
           }
         }, false);
         parent.postMessage("test", "*");
       });
       class StyleLoader extends HTMLElement {
-        constructor(){
+        constructor() {
           super();
           const styleName = this.getAttribute("href");
           const styleSrc = styles[styleName] ?? "";
-          this.before(Object.assign(document.createElement("style"), {innerHTML: styleSrc}));
+          this.before(Object.assign(document.createElement("style"), { innerHTML: styleSrc }));
           this.remove();
         }
       }
@@ -622,8 +622,8 @@
     }
 
     const func2ScriptElem = (func, type) => {
-      const str = func+"";
-      const funcContentStr = str.replace(/^[^{]*{/,"").replace(/}[^}]*$/,"");
+      const str = func + "";
+      const funcContentStr = str.replace(/^[^{]*{/, "").replace(/}[^}]*$/, "");
       //インラインのスクリプトタグで定義しているので、直接閉じタグを使用するとHTMLの解析エラーになる
       return `<script type="${type}">${funcContentStr}${"</"}script>`;
     }
@@ -635,21 +635,21 @@
     }
 
     class DemoView extends HTMLElement {
-      constructor(){
+      constructor() {
         super();
-        this.attachShadow({mode:"open"});
+        this.attachShadow({ mode: "open" });
         this.shadowRoot.innerHTML = `
         <style>${this.constructor.style}</style>
         <iframe id="iframe" sandbox="allow-scripts allow-modals allow-downloads">
         `;
       }
-      set content(val){
+      set content(val) {
         this.shadowRoot.querySelector("#iframe").srcdoc = generateDemoPage(val);
       }
-      sendMessage(msg){
+      sendMessage(msg) {
         this.shadowRoot.querySelector("#iframe").contentWindow.postMessage(msg, "*");
       }
-      static get style(){
+      static get style() {
         return `
           :host{
             display:block;
@@ -669,7 +669,7 @@
       }
     }
     customElements.define("demo-view", DemoView);
-    
+
 
     class Split extends LitElement {
       static get properties() {
@@ -745,9 +745,9 @@
                 position:absolute;
               "
               @mousedown=${e => {
-              this.md = i;
-              console.log(i);
-            }}></div>
+                this.md = i;
+                console.log(i);
+              }}></div>
             </div>
           `;
         }
@@ -762,7 +762,7 @@
         return html`
         <style>
           :host{
-            cursor:${this.md != null?(this.vertical ? "row-resize" : "col-resize"):""};
+            cursor:${this.md != null ? (this.vertical ? "row-resize" : "col-resize") : ""};
           }
         </style>
         <div style="width:100%;height:100%;display:flex;align-items:stretch;flex-direction:${this.vertical ? "column" : "row"};">
