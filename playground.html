@@ -608,11 +608,43 @@
             ${this.getIcon()}
           </div>
           <span>${this.data.name}</span>
+          ${this.data.type==="folder"?html`
+          <div class="row" style="margin-left:auto;gap:4px" @click=${e=>{
+            e.stopPropagation();
+            e.preventDefault();
+            return false;
+          }}>
+            <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
+              const name = prompt("ファイル名を入力");
+              if(name?.trim()){
+                this.data.files.push({
+                  id:9999,
+                  type:"file",
+                  name:name.trim(),
+                  value:"",
+                });
+                this.requestUpdate();
+              }
+            }}>ファイル</button>
+            <button style="white-space:nowrap;font-size:.5em" @click=${e=>{
+              const name = prompt("フォルダ名を入力");
+              if(name?.trim()){
+                this.data.files.push({
+                  id:9999,
+                  type:"folder",
+                  name:name.trim(),
+                  files:[],
+                });
+                this.requestUpdate();
+              }
+            }}>フォルダ</button>
+          </div>
+          `:""}
         </div>
         ${this.data.type === "folder" ? html`
         <div style="display:${this.open ? "contents" : "none"}">
           ${this.data.files.map(e =>
-            html`<tree-file .data=${e} .nest=${this.nest + 1}></tree-fi>`
+            html`<tree-file .data=${e} .nest=${this.nest + 1}></tree-file>`
           )}
         </div>
         `: ""}
