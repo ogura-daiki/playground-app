@@ -757,7 +757,6 @@
               "
               @mousedown=${e => {
                 this.md = i;
-                console.log(i);
               }}></div>
             </div>
           `;
@@ -900,7 +899,6 @@
             automaticLayout: true,
           });
           this.#editor.getModel().onDidChangeContent((event) => {
-            console.log(this.#editor.getValue())
             this.value = this.#editor.getValue();
             this.dispatchEvent(new Event("input"))
           });
