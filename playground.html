@@ -400,8 +400,8 @@
               color:white;
             }
             .file_tab{
-              padding:4px;
-              gap:8px;
+              padding:4px 0px 4px 8px;
+              gap:4px;
               align-items:center;
               border-right:1px solid lightgray;
               color:white;
@@ -415,9 +415,11 @@
               aspect-ratio:1;
               border-radius:.2em;
               user-select:none;
+              margin:4px;
+              font-size:1em;
             }
             .file_tab .close_button:where(:hover, :open){
-              background:rgba(255,255,200,.5)
+              background:rgba(255,255,200,.2)
             }
 
             .files_area{
@@ -576,13 +578,13 @@
               @click=${e=>this.selectTab(pro, id)}
             >
               <span>${this.findFileById(id).name}</span>
-              <div
+              <i
                 class="centering close_button"
                 @click=${e=>{
                   this.closeTab(pro, id);
                   e.stopPropagation();
                 }}
-              >×</div>
+              >close</i>
             </div>
           `)}
         </div>
