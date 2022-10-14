@@ -437,7 +437,7 @@
                   },
                   {
                     type: "file",
-                    name: "index2.css",
+                    name: "index2.rb",
                     value: "4",
                   },
                 ],
@@ -566,11 +566,13 @@
         }
         
         const lang = getLanguageFromFileName(this.data.name);
-        return {
-          html:html`<span class="icon" style="font-size:0.5em;color:salmon">&lt;&gt;</span>`,
-          css:html`<span class="icon" style="font-size:0.8em;color:skyblue">#</span>`,
-          javascript:html`<span class="icon" style="font-size:0.5em;color:yellow">JS</span>`,
-        }[lang];
+        return lang
+        ?{
+          html:html`<span style="font-size:0.5em;color:salmon">&lt;&gt;</span>`,
+          css:html`<span style="font-size:0.8em;color:skyblue">#</span>`,
+          javascript:html`<span style="font-size:0.5em;color:yellow">JS</span>`,
+        }[lang]
+        :html`<span style="font-size:0.5em;color:lightpink">?</span>`;
       }
       render() {
         this.style.display = "contents";
@@ -825,7 +827,6 @@
     customElements.define("split-panel", Split);
 
     const getLanguageFromFileName = fileName => {
-      console.log(fileName)
       const ext = fileName.match(/\.([^.]+)$/)[1];
       const list = {
         html:"html",
