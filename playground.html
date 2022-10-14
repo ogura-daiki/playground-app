@@ -455,7 +455,7 @@
             <div class="title">ファイル一覧</div>
             <div class="col files">
               <tree-file
-                .data=${{ name: "root", type: "folder", files }}
+                .data=${{ name: this.getCurrentProject().name, type: "folder", files }}
                 .nest=${0}
                 @select=${({detail:file})=>{
                   alert(JSON.stringify(file, null, 2));
