@@ -1045,13 +1045,11 @@
     const styleLoader = () => {
       const template = document.querySelector("#__imported_style_map");
       const styles = JSON.parse(template.textContent);
-      console.log(styles);
       class StyleLoader extends HTMLElement {
         constructor() {
           super();
           const href = this.getAttribute("href");
           const style = Object.assign(document.createElement("style"), {textContent:styles[href]||""});
-          console.log(style);
           this.before(style);
           this.remove();
         }
