@@ -447,55 +447,9 @@
             .files_area .files{
               overflow-y:scroll;
             }
-            .files_area .files *:where(.folder, .file){
-              box-shadow: rgba(255,255,255,.2) 0px 1px 0px 0px;
-            }
-            .files_area .files *:where(.folder, .file):hover{
-              background:#535353;
-            }
-            .files_area .files .folder{
-            }
-            .files_area .files .root>.folder{
-              position:sticky;
-              top:0px;
-              z-index:1;
-              background:#282828;
-            }
-            .files_area .files .folder .folder_arrow{
-              font-family:monospace;
-              font-weight:bold;
-              transition:transform .1s;
-            }
-            .files_area .files .menu_button{
-              border:0px;
-              margin:0px;
-              padding:0px;
-              background:transparent;
-              border-radius:.2em;
-              color:white;
-              width:2em;
-              aspect-ratio:1;
-            }
-            .files_area .files .menu_button:where(:hover, :active){
-              background:rgba(255,255,255,.2);
-            }
-            .files_area .files .menu_button i{
-              font-size:1.4em;
-            }
-            tree-file{
-              display:contents;
-            }
             tree-file.root{
               display:block;
               min-width:fit-content;
-            }
-            tree-file .menu{
-              pointer-events:none;
-              opacity:0;
-            }
-            tree-file:hover>*>.menu{
-              pointer-events:auto;
-              opacity:1;
             }
           `
         ];
@@ -761,6 +715,54 @@
     document.body.append(new PlayGroundApp());
 
     customElements.define("tree-file", class extends BaseElement {
+      static get styles(){
+        return [
+          super.styles,
+          css`
+            :host(.root) .main{
+              position:sticky;
+              top:0px;
+              z-index:1;
+              background:#282828;
+            }
+            .main{
+              box-shadow: rgba(255,255,255,.2) 0px 1px 0px 0px;
+            }
+            .main:hover{
+              background: rgba(255,255,255,.2);
+            }
+            .folder_arrow{
+              font-family:monospace;
+              font-weight:bold;
+              transition:transform .1s;
+            }
+            .menu_button{
+              border:0px;
+              margin:0px;
+              padding:0px;
+              background:transparent;
+              border-radius:.2em;
+              color:white;
+              width:2em;
+              aspect-ratio:1;
+            }
+            .menu_button:where(:hover, :active){
+              background:rgba(255,255,255,.2);
+            }
+            .menu_button i{
+              font-size:1.4em;
+            }
+            .menu{
+              pointer-events:none;
+              opacity:0;
+            }
+            .main:hover .menu{
+              pointer-events:auto;
+              opacity:1;
+            }
+          `
+        ]
+      }
       static get properties() {
         return {
           nest: { type: Number },
@@ -776,7 +778,7 @@
         this.nest = 0;
         this.open = false;
       }
-      createRenderRoot() { return this; }
+      
       getIcon(){
         if(this.data.type === "folder"){
           return html`<div class="folder_arrow" style="transform:rotateZ(${this.open ? "90" : "0"}deg);">&gt;</div>`;
@@ -804,7 +806,7 @@
       render() {
         return html`
         <div
-          class="${this.data.type} row"
+          class="${this.data.type} row main"
           style="gap:4px;padding-right:8px;align-items: center;"
           @click=${e => {
             if (this.data.type === "folder") {
