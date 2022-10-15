@@ -528,6 +528,27 @@
             this.requestUpdate();
           }
         }
+        const onMove = ({to, fileId})=>{
+          const fromFiles = this.#findParentByFileId(fileId);
+          console.log({fromFiles, to})
+          if(fromFiles === to.files){
+            return;
+          }
+          const file = this.findFileObjFromId(fileId);
+          if(to.files.some(f=>f.name===file.name)){
+            return;
+          }
+          if(this.#hasRefLoop(to.files, file)){
+            return false;
+          }
+          const fromIdx = fromFiles.findIndex(f=>f.id === file.id);
+          //console.log({from, to});
+          this.updateProjects(()=>{
+            fromFiles.splice(fromIdx, 1);
+            to.files.push(file);
+          })
+          this.requestUpdate();
+        }
 
         return html`
           <div class="col fill files_area">
@@ -542,6 +563,7 @@
                 @rename=${({detail})=>onRename(detail)}
                 @create=${({detail})=>onCreate(detail)}
                 @delete=${({detail})=>onDelete(detail)}
+                @move=${({detail})=>onMove(detail)}
               ></tree-file>
             </div>
           </div>
@@ -608,18 +630,20 @@
         this.ctx.project = this.projects[0].id;
         return pro;
       }
-      #searchFiles(files, callback, multiple=false){
+      #searchFiles(files, callback, type="file", multiple=false){
         const value = [];
           const walk = files => {
             return files.some(file=>{
-              if(file.type==="file"){
+              if(type === "all" || file.type===type){
                 const result = callback(file);
                 if(result){
                   value.push(file);
+                  return multiple;
                 }
-                return result && multiple;
               }
-              return walk(file.files) && multiple;
+              if(file.type=="folder"){
+                return walk(file.files) && multiple;
+              }
             })
           }
           walk(files);
@@ -631,6 +655,23 @@
       findFileById(id) {
         const pro = this.getCurrentProject();
         return this.#searchFiles(pro.files, file=>file.id === id);
+      }
+      findFileObjFromId(id) {
+        const pro = this.getCurrentProject();
+        return this.#searchFiles(pro.files, f=>f.id === id, "all");
+      }
+      #findParentByFileId(id) {
+        const pro = this.getCurrentProject();
+        if(pro.files.some(f=>f.id===id)) return pro.files;
+        return this.#searchFiles(pro.files, folder=>{
+          console.log(folder.files, folder.files.some(file=>file.id===id));
+          return folder.files.some(file=>file.id===id);
+        }, "folder")?.files;
+      }
+      #hasRefLoop(toFiles, file){
+        if(file.type!=="folder") return false;
+        if(file.files === toFiles) return true;
+        return !!this.#searchFiles(file.files, f=>f.files===toFiles, "folder");
       }
       getOpenedFile() {
         const pro = this.getCurrentProject();
@@ -852,6 +893,7 @@
         <div
           class="${this.data.type} main"
           title=${this.data.name}
+          .draggable=${!!this.nest}
           style="gap:4px;padding-right:8px;align-items: center;"
           @click=${e => {
             if (this.data.type === "folder") {
@@ -859,6 +901,30 @@
               return;
             }
             this.dispatchEvent(new CustomEvent("select", {detail:this.data, bubbles:true, composed: true,}));
+          }}
+          @dragstart=${e=>{
+            e.dataTransfer.setData("text", this.data.id);
+          }}
+          @dragover=${e=>{
+            e.preventDefault();
+          }}
+          @drop=${e=>{
+            e.preventDefault();
+            const fileId = e.dataTransfer.getData("text");
+            const toFolder = this.data.type==="folder"?this.data:this.parent;
+            this.dispatchEvent(new CustomEvent("move", {
+              detail:{
+                to:toFolder,
+                fileId,
+              },
+              bubbles:true,
+              composed: true,
+            }));
+            if(this.data.type==="file"){
+              this.dispatchEvent(new CustomEvent("dragend"));
+              return;
+            }
+            this.requestUpdate();
           }}
         >
           <div class='area-g1 row' style="overflow:hidden;gap:4px">
@@ -934,6 +1000,7 @@
                         value:createFolder({name}),
                       },
                       bubbles:true,
+                      composed: true,
                     }));
                     this.requestUpdate();
                   }
@@ -945,7 +1012,16 @@
         ${this.data.type === "folder" ? html`
         <div style="display:${this.open ? "contents" : "none"}">
           ${this.data.files.map(e =>
-            html`<tree-file @deleted=${e=>this.requestUpdate()} .parent=${this.data} .data=${e} .nest=${this.nest + 1}></tree-file>`
+            html`
+            <tree-file
+              @deleted=${e=>this.requestUpdate()}
+              @dragend=${e=>{
+                this.requestUpdate();
+              }}
+              .parent=${this.data}
+              .data=${e}
+              .nest=${this.nest + 1}
+            ></tree-file>`
           )}
         </div>
         `: ""}
