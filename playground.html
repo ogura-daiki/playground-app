@@ -223,10 +223,6 @@
       };
     }
 
-    const compileProject = (project) => {
-      return project.files.find(file=>file.id===project.entryFile).value;
-    }
-
     class PlayGroundApp extends BaseElement {
       static get properties() {
         return {
@@ -241,7 +237,7 @@
         super();
         this.updater = debounce((force, { auto_refresh=false }={}) => {
           if (force || auto_refresh) {
-            this.renderRoot.querySelector("#demo-view").content = compileProject(this.getCurrentProject());
+            this.renderRoot.querySelector("#demo-view").content = this.#compileProject();
           }
         });
         this.config = Store.get("config");
@@ -720,8 +716,11 @@
                       :()=>html`
                       <div class="fill centering">
                         <div class="centering no_opened_file">
-                          <span style="font-size:8em;line-height:1em;">📁</span>
+                          <i style="font-size:8em;line-height:1em;">file_copy</i>
                           <span>ファイルが開かれていません</span>
+                          <button
+                            @click=${e=>{this.files_opened=true;}}
+                          >ファイルリストを開く</button>
                       </div>
                       `
                     )()}
@@ -761,6 +760,12 @@
       updateProjects(func) {
         func(this.projects);
         Store.set("projects", this.projects);
+      }
+
+      #compileProject(){
+        const project = this.getCurrentProject();
+        const entryFile = this.findFileById(project.entryFile);
+        return entryFile.value;
       }
     }
     customElements.define("playground-app", PlayGroundApp);
