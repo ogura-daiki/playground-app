@@ -223,9 +223,57 @@
       };
     }
 
-    const ProjectUtil = project => ({
-      
-    })
+    const ProjectUtil = pro => ({
+      __searchFiles(files, callback, {type="file", multiple=false, path=""}={}){
+        const value = [];
+          const walk = (files, path) => {
+            return files.some(file=>{
+              if(type === "all" || file.type===type){
+                const result = callback(file);
+                if(result){
+                  value.push({file, path:path+file.name});
+                  return multiple;
+                }
+              }
+              if(file.type=="folder"){
+                return walk(file.files, path+file.name+"/") && multiple;
+              }
+            })
+          }
+          walk(files, path);
+          if(multiple){
+            return value;
+          }
+          return value[0];
+      },
+      findFileById(id) {
+        return this.__searchFiles(pro.files, file=>file.id === id)?.file;
+      },
+      findFileObjFromId(id) {
+        return this.__searchFiles(pro.files, f=>f.id === id, {type:"all"})?.file;
+      },
+      findParentByFileId(id) {
+        if(pro.files.some(f=>f.id===id)) return pro.files;
+        return this.__searchFiles(pro.files, folder=>{
+          return folder.files.some(file=>file.id===id);
+        }, {type:"folder"})?.file.files;
+      },
+      hasRefLoop(toFiles, file){
+        if(file.type!=="folder") return false;
+        if(file.files === toFiles) return true;
+        return !!this.__searchFiles(file.files, f=>f.files===toFiles, {type:"folder"});
+      },
+      hasEntryFile(folder){
+        if(folder.type!="folder") return false;
+        return !!this.__searchFiles(folder.files, f=>f.id===pro.entryFile);
+      },
+      getOpenedFile() {
+        return this.findFileById(pro.opened);
+      },
+      findFilesByLanguage(language){
+        return this.__searchFiles(pro.files, f=>getLanguageFromFileName(f.name)===language, {multiple:true});
+      },
+    });
 
     class PlayGroundApp extends BaseElement {
       static get properties() {
@@ -256,7 +304,7 @@
           const actions = new Map(Object.entries({
             requestStyles: data=>{
               const pro = self.getCurrentProject();
-              const styleFiles = self.#searchFiles(pro.files, f=>getLanguageFromFileName(f.name)==="css", {multiple:true});
+              const styleFiles = ProjectUtil(pro).findFilesByLanguage("css");
               const stylesMap = styleFiles.reduce((obj,{path,file:{value}})=>{
                 obj[path]=value;
                 return obj;
@@ -495,6 +543,7 @@
       }
       fileList() {
         const project = this.getCurrentProject();
+        const projectUtil = ProjectUtil(project);
         //const files = project.files;
 
         const getFileTypeName = file => ({folder:"フォルダ",file:"ファイル"}[file.type]);
@@ -536,7 +585,7 @@
             alert("初期ファイルは削除できません");
             return;
           }
-          if(file.type==="folder" && this.#hasEntryFile(file)){
+          if(file.type==="folder" && projectUtil.hasEntryFile(file)){
             alert("フォルダ内に初期ファイルが含まれているので削除できません");
             return;
           }
@@ -551,15 +600,15 @@
           }
         }
         const onMove = ({to, fileId})=>{
-          const fromFiles = this.#findParentByFileId(fileId);
+          const fromFiles = projectUtil.findParentByFileId(fileId);
           if(fromFiles === to.files){
             return;
           }
-          const file = this.findFileObjFromId(fileId);
+          const file = projectUtil.findFileObjFromId(fileId);
           if(to.files.some(f=>f.name===file.name)){
             return;
           }
-          if(this.#hasRefLoop(to.files, file)){
+          if(projectUtil.hasRefLoop(to.files, file)){
             return false;
           }
           const fromIdx = fromFiles.findIndex(f=>f.id === file.id);
@@ -617,6 +666,7 @@
       }
       fileTabs(){
         const pro = this.getCurrentProject();
+        const projectUtil = ProjectUtil(pro);
         return html`
         <div class="row file_tabs scroll_overlay">
           <button
@@ -627,7 +677,7 @@
             <div class="row file_tab ${pro.opened === id ? "open" : ""}"
               @click=${e=>this.selectTab(pro, id)}
             >
-              <span>${this.findFileById(id).name}</span>
+              <span>${projectUtil.findFileById(id).name}</span>
               <i
                 class="centering close_button"
                 @click=${e=>{
@@ -650,59 +700,9 @@
         this.ctx.project = this.projects[0].id;
         return pro;
       }
-      #searchFiles(files, callback, {type="file", multiple=false, path=""}={}){
-        const value = [];
-          const walk = (files, path) => {
-            return files.some(file=>{
-              if(type === "all" || file.type===type){
-                const result = callback(file);
-                if(result){
-                  value.push({file, path:path+file.name});
-                  return multiple;
-                }
-              }
-              if(file.type=="folder"){
-                return walk(file.files, path+file.name+"/") && multiple;
-              }
-            })
-          }
-          walk(files, path);
-          if(multiple){
-            return value;
-          }
-          return value[0];
-      }
-      findFileById(id) {
-        const pro = this.getCurrentProject();
-        return this.#searchFiles(pro.files, file=>file.id === id)?.file;
-      }
-      findFileObjFromId(id) {
-        const pro = this.getCurrentProject();
-        return this.#searchFiles(pro.files, f=>f.id === id, {type:"all"})?.file;
-      }
-      #findParentByFileId(id) {
-        const pro = this.getCurrentProject();
-        if(pro.files.some(f=>f.id===id)) return pro.files;
-        return this.#searchFiles(pro.files, folder=>{
-          return folder.files.some(file=>file.id===id);
-        }, {type:"folder"})?.file.files;
-      }
-      #hasRefLoop(toFiles, file){
-        if(file.type!=="folder") return false;
-        if(file.files === toFiles) return true;
-        return !!this.#searchFiles(file.files, f=>f.files===toFiles, {type:"folder"});
-      }
-      #hasEntryFile(folder){
-        if(folder.type!="folder") return false;
-        const pro = this.getCurrentProject();
-        return !!this.#searchFiles(folder.files, f=>f.id===pro.entryFile);
-      }
-      getOpenedFile() {
-        const pro = this.getCurrentProject();
-        return this.findFileById(pro.opened);
-      }
 
       render() {
+        const projectUtil = ProjectUtil(this.getCurrentProject());
         return html`
           <div class="col fill">
             <div class="top_bar row" style="background:darkblue;">
@@ -720,9 +720,9 @@
                   <div class="grow code_area">
                     ${(this.getCurrentProject().opened!=null
                       ?()=>html`
-                        <monaco-editor .filename=${this.getOpenedFile().name} .value=${this.getOpenedFile().value} id="input" class="fill" @input=${e => {
+                        <monaco-editor .filename=${projectUtil.getOpenedFile().name} .value=${projectUtil.getOpenedFile().value} id="input" class="fill" @input=${e => {
                           this.updateProjects(ps => {
-                            this.getOpenedFile().value = e.target.value;
+                            projectUtil.getOpenedFile().value = e.target.value;
                           });
                           this.updater.push(this.config.refresh_wait, {
                             auto_refresh: this.config.auto_refresh
@@ -780,7 +780,7 @@
 
       #compileProject(){
         const project = this.getCurrentProject();
-        const entryFile = this.findFileById(project.entryFile);
+        const entryFile = ProjectUtil(project).findFileById(project.entryFile);
         return entryFile.value;
       }
     }
