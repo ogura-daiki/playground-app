@@ -1076,7 +1076,7 @@
 
     const generateDemoPage = (input) => {
       const dom = new DOMParser().parseFromString(input, "text/html");
-      dom.head.innerHTML = func2ScriptElem(styleLoader, "module") + dom.head.innerHTML;
+      dom.body.innerHTML += func2ScriptElem(styleLoader, "module");
       return dom.documentElement.innerHTML;
     }
 
