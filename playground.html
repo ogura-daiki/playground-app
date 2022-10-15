@@ -298,26 +298,6 @@
         this.menu_opened = false;
         this.files_opened = false;
 
-        const self = this;
-        window.addEventListener("message", (event) => {
-          const actionName = event.data?.action;
-          const actions = new Map(Object.entries({
-            requestStyles: data=>{
-              const pro = self.getCurrentProject();
-              const styleFiles = ProjectUtil(pro).findFilesByLanguage("css");
-              const stylesMap = styleFiles.reduce((obj,{path,file:{value}})=>{
-                obj[path]=value;
-                return obj;
-              },{});
-              return {
-                type: "styles",
-                value: stylesMap,
-              };
-            },
-          }));
-          if(!actions.has(actionName)) return;
-          this.renderRoot.getElementById("demo-view").sendMessage(actions.get(actionName)(event.data));
-        }, false);
       }
       static get styles() {
         return [
@@ -1063,22 +1043,20 @@
     });
 
     const styleLoader = () => {
-      window.addEventListener("message", ({ data }) => {
-        if (data.type = "styles") {
-          const styles = data.value;
-          class StyleLoader extends HTMLElement {
-            constructor() {
-              super();
-              const styleName = this.getAttribute("href");
-              const styleSrc = styles[styleName] ?? "";
-              this.before(Object.assign(document.createElement("style"), { innerHTML: styleSrc }));
-              this.remove();
-            }
-          }
-          customElements.define("style-loader", StyleLoader);
+      const template = document.querySelector("#__imported_style_map");
+      const styles = JSON.parse(template.textContent);
+      console.log(styles);
+      class StyleLoader extends HTMLElement {
+        constructor() {
+          super();
+          const href = this.getAttribute("href");
+          const style = Object.assign(document.createElement("style"), {textContent:styles[href]||""});
+          console.log(style);
+          this.before(style);
+          this.remove();
         }
-      }, false);
-      parent.postMessage({action:"requestStyles"}, "*");
+      }
+      customElements.define("style-loader", StyleLoader);
     }
     const scriptLoader = () => {
       const template = document.querySelector("#__imported_script_map");
@@ -1136,7 +1114,23 @@
       importMapScript.textContent = JSON.stringify(importsMap);
 
       const scripts = [
-        createScriptElem(getFuncContents(styleLoader)),
+        Object.assign(
+          document.createElement("script"), 
+          {
+            type:"text/json",
+            id:"__imported_style_map",
+            textContent:JSON.stringify(
+              projectUtil
+                .findFilesByLanguage("css")
+                .reduce(
+                  (o,{path,file})=>
+                    Object.assign(o,{[path]:file.value})
+                  ,{}
+                )
+            )
+          }
+        ),
+        createScriptElem(`(()=>{${getFuncContents(styleLoader)}})()`),
         Object.assign(
           document.createElement("script"), 
           {
@@ -1150,7 +1144,7 @@
             )
           }
         ),
-        createScriptElem(getFuncContents(scriptLoader)),
+        createScriptElem(`(()=>{${getFuncContents(scriptLoader)}})()`),
       ];
       if(importMapScript){
         scripts.reverse().forEach(e=>importMapScript.after(e));
