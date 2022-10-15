@@ -639,12 +639,34 @@
         this.ctx.project = this.projects[0].id;
         return pro;
       }
+      #searchFiles(files, callback, multiple=false){
+        const value = [];
+          const walk = files => {
+            return files.some(file=>{
+              if(file.type==="file"){
+                const result = callback(file);
+                //console.log(file.id === id, file)
+                if(result){
+                  value.push(file);
+                }
+                return result && multiple;
+              }
+              return walk(file.files) && multiple;
+            })
+          }
+          walk(files);
+          if(multiple){
+            return value;
+          }
+          return value[0];
+      }
       findFileById(id) {
-        return this.getCurrentProject().files.find(f=>f.id === id);
+        const pro = this.getCurrentProject();
+        return this.#searchFiles(pro.files, file=>file.id === id);
       }
       getOpenedFile() {
         const pro = this.getCurrentProject();
-        return pro.files.find(f=>f.id===pro.opened);
+        return this.findFileById(pro.opened);
       }
 
       render() {
