@@ -223,6 +223,10 @@
       };
     }
 
+    const ProjectUtil = project => ({
+      
+    })
+
     class PlayGroundApp extends BaseElement {
       static get properties() {
         return {
@@ -237,7 +241,7 @@
         super();
         this.updater = debounce((force, { auto_refresh=false }={}) => {
           if (force || auto_refresh) {
-            this.renderRoot.querySelector("#demo-view").content = this.#compileProject();
+            this.renderRoot.querySelector("#demo-view").content = this.getCurrentProject();
           }
         });
         this.config = Store.get("config");
@@ -246,17 +250,22 @@
         this.menu_opened = false;
         this.files_opened = false;
 
+        const self = this;
         window.addEventListener("message", (event) => {
           const actionName = event.data?.action;
           const actions = new Map(Object.entries({
             requestStyles: data=>{
+              const pro = self.getCurrentProject();
+              const styleFiles = self.#searchFiles(pro.files, f=>getLanguageFromFileName(f.name)==="css", {multiple:true});
+              const stylesMap = styleFiles.reduce((obj,{path,file:{value}})=>{
+                obj[path]=value;
+                return obj;
+              },{});
               return {
                 type: "styles",
-                value: {
-                  "test.css": `body{background:green}`,
-                }
+                value: stylesMap,
               };
-            }
+            },
           }));
           if(!actions.has(actionName)) return;
           this.renderRoot.getElementById("demo-view").sendMessage(actions.get(actionName)(event.data));
@@ -1102,8 +1111,8 @@
         <iframe id="iframe" sandbox="allow-scripts allow-modals allow-downloads">
         `;
       }
-      set content(val) {
-        this.shadowRoot.querySelector("#iframe").srcdoc = generateDemoPage(val);
+      set project(project) {
+        this.shadowRoot.querySelector("#iframe").srcdoc = generateDemoPage(project);
       }
       sendMessage(msg) {
         this.shadowRoot.querySelector("#iframe").contentWindow.postMessage(msg, "*");
