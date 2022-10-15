@@ -517,7 +517,7 @@
 
         const getFileTypeName = file => ({folder:"フォルダ",file:"ファイル"}[file.type]);
 
-        const equalsName = (f1, f2) => f1.type === f2.type && f1.name === f2.name;
+        const equalsName = (f1, f2) => f1.name === f2.name;
 
         const onSelect = (file)=>{
           this.openTab(project, file.id);
