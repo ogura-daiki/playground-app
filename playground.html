@@ -1048,8 +1048,11 @@
       class StyleLoader extends HTMLElement {
         constructor() {
           super();
+        }
+        connectedCallback(){
+          const style = document.createElement("style");
           const href = this.getAttribute("href");
-          const style = Object.assign(document.createElement("style"), {textContent:styles[href]||""});
+          style.innerHTML = styles[href]||"";
           this.before(style);
           this.remove();
         }
@@ -1062,6 +1065,8 @@
       class ScriptLoader extends HTMLElement {
         constructor() {
           super();
+        }
+        connectedCallback(){
           const scriptElem = document.createElement("script");
           this.before(scriptElem);
           this.remove();
