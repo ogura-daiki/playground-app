@@ -641,7 +641,7 @@
         this.ctx.project = this.projects[0].id;
         return pro;
       }
-      #searchFiles(files, callback, type="file", multiple=false){
+      #searchFiles(files, callback, {type="file", multiple=false}={}){
         const value = [];
           const walk = files => {
             return files.some(file=>{
@@ -669,19 +669,19 @@
       }
       findFileObjFromId(id) {
         const pro = this.getCurrentProject();
-        return this.#searchFiles(pro.files, f=>f.id === id, "all");
+        return this.#searchFiles(pro.files, f=>f.id === id, {type:"all"});
       }
       #findParentByFileId(id) {
         const pro = this.getCurrentProject();
         if(pro.files.some(f=>f.id===id)) return pro.files;
         return this.#searchFiles(pro.files, folder=>{
           return folder.files.some(file=>file.id===id);
-        }, "folder")?.files;
+        }, {type:"folder"})?.files;
       }
       #hasRefLoop(toFiles, file){
         if(file.type!=="folder") return false;
         if(file.files === toFiles) return true;
-        return !!this.#searchFiles(file.files, f=>f.files===toFiles, "folder");
+        return !!this.#searchFiles(file.files, f=>f.files===toFiles, {type:"folder"});
       }
       #hasEntryFile(folder){
         if(folder.type!="folder") return false;
