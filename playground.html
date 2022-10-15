@@ -506,7 +506,51 @@
         `
       }
       fileList() {
-        const files = this.getCurrentProject().files;
+        const project = this.getCurrentProject();
+        const files = project.files;
+
+        const getFileTypeName = file => ({folder:"フォルダ",file:"ファイル"}[file.type]);
+
+        const equalsName = (f1, f2) => f1.type === f2.type && f1.name === f2.name;
+
+        const onSelect = (file)=>{
+          this.openTab(project, file.id);
+        }
+        const onCreate = ({files, newFile})=>{
+          if(files.some(f=>equalsName(f, newFile))){
+            alert(`${getFileTypeName(newFile)}名：${name}はフォルダ内に既に存在します。`);
+            return;
+          }
+          this.updateProjects(()=>{
+            files.push(newFile);
+          });
+          this.requestUpdate();
+        }
+        const onRename = ({files,file,name})=>{
+          if(files.some(f=>f!==file&&equalsName(f, file))){
+            alert(`${getFileTypeName(file)}名：${name}はフォルダ内に既に存在します。`);
+            return;
+          }
+          this.updateProjects(()=>{
+            file.name = name;
+          });
+          this.requestUpdate();
+        }
+        const onDelete = ({files,file})=>{
+          if(file.id === project.entryFile){
+            alert("初期ファイルは削除できません");
+            return;
+          }
+          if(confirm(`${getFileTypeName(file)}名：${file.name}を削除してもよろしいですか？`)){
+            this.updateProjects(()=>{
+              if(project.tabs.includes(file.id)){
+                this.closeTab(project, file.id);
+              }
+              files.splice(files.findIndex(v=>v===file),1);
+            });
+            this.requestUpdate();
+          }
+        }
 
         return html`
           <div class="col fill files_area">
@@ -516,45 +560,10 @@
                 .open=${true}
                 .data=${{ name: this.getCurrentProject().name, type: "folder", files }}
                 .nest=${0}
-                @select=${({detail:file})=>{
-                  this.openTab(this.getCurrentProject(), file.id);
-                }}
-                @rename=${({detail:{files,file,name}})=>{
-                  if(files.some(f=>f!==file&&f.name===name)){
-                    alert(`ファイル名：${name}はフォルダ内に既に存在します。`);
-                    return;
-                  }
-                  this.updateProjects(()=>{
-                    file.name = name;
-                  });
-                  this.requestUpdate();
-                }}
-                @create=${({detail:{files,value}})=>{
-                  if(files.some(f=>f.name===value.name&&f.type===value.type)){
-                    alert(`${{file:"ファイル",folder:"フォルダ"}[value.type]}名：${name}はフォルダ内に既に存在します。`);
-                    return;
-                  }
-                  this.updateProjects(()=>{
-                    files.push(value);
-                  });
-                  this.requestUpdate();
-                }}
-                @delete=${({detail:{files,file}})=>{
-                  const pro = this.getCurrentProject();
-                  if(file.id === pro.entryFile){
-                    alert("初期ファイルは削除できません");
-                    return;
-                  }
-                  if(confirm({folder:"フォルダ",file:"ファイル"}[file.type]+`名：${file.name}を削除してもよろしいですか？`)){
-                    this.updateProjects(()=>{
-                      if(pro.tabs.includes(file.id)){
-                        this.closeTab(pro, file.id);
-                      }
-                      files.splice(files.findIndex(v=>v===file),1);
-                    });
-                    this.requestUpdate();
-                  }
-                }}
+                @select=${({detail})=>onSelect(detail)}
+                @rename=${({detail})=>onRename(detail)}
+                @create=${({detail})=>onCreate(detail)}
+                @delete=${({detail})=>onDelete(detail)}
               ></tree-file>
             </div>
           </div>
