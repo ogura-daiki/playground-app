@@ -641,23 +641,23 @@
         this.ctx.project = this.projects[0].id;
         return pro;
       }
-      #searchFiles(files, callback, {type="file", multiple=false}={}){
+      #searchFiles(files, callback, {type="file", multiple=false, path=""}={}){
         const value = [];
-          const walk = files => {
+          const walk = (files, path) => {
             return files.some(file=>{
               if(type === "all" || file.type===type){
                 const result = callback(file);
                 if(result){
-                  value.push(file);
+                  value.push({file, path:path+file.name});
                   return multiple;
                 }
               }
               if(file.type=="folder"){
-                return walk(file.files) && multiple;
+                return walk(file.files, path+file.name+"/") && multiple;
               }
             })
           }
-          walk(files);
+          walk(files, path);
           if(multiple){
             return value;
           }
@@ -665,18 +665,18 @@
       }
       findFileById(id) {
         const pro = this.getCurrentProject();
-        return this.#searchFiles(pro.files, file=>file.id === id);
+        return this.#searchFiles(pro.files, file=>file.id === id)?.file;
       }
       findFileObjFromId(id) {
         const pro = this.getCurrentProject();
-        return this.#searchFiles(pro.files, f=>f.id === id, {type:"all"});
+        return this.#searchFiles(pro.files, f=>f.id === id, {type:"all"})?.file;
       }
       #findParentByFileId(id) {
         const pro = this.getCurrentProject();
         if(pro.files.some(f=>f.id===id)) return pro.files;
         return this.#searchFiles(pro.files, folder=>{
           return folder.files.some(file=>file.id===id);
-        }, {type:"folder"})?.files;
+        }, {type:"folder"})?.file.files;
       }
       #hasRefLoop(toFiles, file){
         if(file.type!=="folder") return false;
