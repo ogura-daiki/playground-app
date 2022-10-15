@@ -811,6 +811,11 @@
                   },
                   bubbles:true,
                 }));
+                this.dispatchEvent(new CustomEvent("deleted", {
+                  detail:{
+                    file:this.data,
+                  },
+                }));
               }}><i>delete</i></button>
             `:""}
             ${this.data.type==="folder"?html`
@@ -824,6 +829,7 @@
                     },
                     bubbles:true,
                   }));
+                  this.dispatchEvent(new CustomEvent("deleted", {bubbles:true}));
                 }
               }}><i>note_add</i></button>
               <button class="centering menu_button" @click=${e=>{
@@ -836,6 +842,7 @@
                     },
                     bubbles:true,
                   }));
+                  this.requestUpdate();
                 }
               }}><i>create_new_folder</i></button>
             `:""}
@@ -844,7 +851,7 @@
         ${this.data.type === "folder" ? html`
         <div style="display:${this.open ? "contents" : "none"}">
           ${this.data.files.map(e =>
-            html`<tree-file .parent=${this.data} .data=${e} .nest=${this.nest + 1}></tree-file>`
+            html`<tree-file @deleted=${e=>this.requestUpdate()} .parent=${this.data} .data=${e} .nest=${this.nest + 1}></tree-file>`
           )}
         </div>
         `: ""}
