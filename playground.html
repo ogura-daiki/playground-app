@@ -851,6 +851,7 @@
         return html`
         <div
           class="${this.data.type} main"
+          title=${this.data.name}
           style="gap:4px;padding-right:8px;align-items: center;"
           @click=${e => {
             if (this.data.type === "folder") {
