@@ -289,7 +289,7 @@
         super();
         this.updater = debounce((force, { auto_refresh=false }={}) => {
           if (force || auto_refresh) {
-            this.renderRoot.querySelector("#demo-view").content = this.getCurrentProject();
+            this.renderRoot.querySelector("#demo-view").project = this.getCurrentProject();
           }
         });
         this.config = Store.get("config");
@@ -1080,24 +1080,83 @@
       }, false);
       parent.postMessage({action:"requestStyles"}, "*");
     }
-
-    const func2ScriptElem = (func, type="text/javascript") => {
-      const str = func + "";
-      const funcContentStr = str.replace(/^[^{]*{/, "").replace(/}[^}]*$/, "");
-      return Object.assign(document.createElement("script"), {textContent:funcContentStr, type});
+    const scriptLoader = () => {
+      const template = document.querySelector("#__imported_script_map");
+      const scripts = JSON.parse(template.textContent);
+      class ScriptLoader extends HTMLElement {
+        constructor() {
+          super();
+          const scriptElem = document.createElement("script");
+          this.before(scriptElem);
+          this.remove();
+          scriptElem.type = this.getAttribute("type")||"text/javascript";
+          scriptElem.textContent = scripts[this.getAttribute("src")];
+        }
+      }
+      customElements.define("script-loader", ScriptLoader);
     }
 
-    const generateDemoPage = (input) => {
-      const dom = new DOMParser().parseFromString(input, "text/html");
-      const anchor = [...(dom.querySelectorAll(`script[type="importmap"]`)||dom.body.children)].pop();
-      const scripts = {
-        styleLoader:func2ScriptElem(styleLoader),
-      };
-      if(anchor){
-        anchor.after(scripts.styleLoader);
+    const createScriptElem = (content, type="text/javascript") => {
+      return Object.assign(document.createElement("script"), {textContent:content, type});
+    }
+    const getFuncContents = func => {
+      const str = func + "";
+      const funcContentStr = str.replace(/^[^{]*{/, "").replace(/}[^}]*$/, "");
+      return funcContentStr;
+    }
+
+    const file2DataUri = (fileName, value) => new Promise(resolve=>{
+      const fileReader = new FileReader();
+      const file = new File([value], fileName, {
+        type: getMimeTypeFromFileName(fileName),
+      });
+      fileReader.onload = () => {
+        const dataUri = fileReader.result;
+        resolve(dataUri);
+      }
+      fileReader.readAsDataURL(file);
+    });
+
+    const generateDemoPage = async (project) => {
+      const projectUtil = ProjectUtil(project);
+      const entryFile = projectUtil.findFileById(project.entryFile);
+      const dom = new DOMParser().parseFromString(entryFile.value, "text/html");
+      
+      if(!dom.querySelector(`script[type="importmap"]`)){
+        dom.head.insertBefore(Object.assign(document.createElement("script"), {type:"importmap"}), dom.head.firstChild);
+      }
+      const importMapScript = [...dom.querySelectorAll(`script[type="importmap"]`)].pop();
+      const importsMap = JSON.parse(importMapScript.textContent||JSON.stringify({"imports":{}}));
+      const scriptFiles = projectUtil.findFilesByLanguage("javascript");
+      const dataUris = await Promise.all(scriptFiles.map(({path,file}) => file2DataUri(file.name, file.value).then(data=>({path,data}))));
+      dataUris.forEach(({path, data})=>{
+        importsMap.imports[path] = data;
+      });
+
+      importMapScript.textContent = JSON.stringify(importsMap);
+
+      const scripts = [
+        createScriptElem(getFuncContents(styleLoader)),
+        Object.assign(
+          document.createElement("script"), 
+          {
+            type:"text/json",
+            id:"__imported_script_map",
+            textContent:JSON.stringify(
+              scriptFiles.reduce((o,{path,file})=>Object.assign(
+                o,
+                {[path]:file.value}
+              ),{})
+            )
+          }
+        ),
+        createScriptElem(getFuncContents(scriptLoader)),
+      ];
+      if(importMapScript){
+        scripts.reverse().forEach(e=>importMapScript.after(e));
       }
       else{
-        dom.body.append(scripts.styleLoader);
+        scripts.forEach(e=>dom.body.append(e));
       }
       return dom.documentElement.innerHTML;
     }
@@ -1112,7 +1171,7 @@
         `;
       }
       set project(project) {
-        this.shadowRoot.querySelector("#iframe").srcdoc = generateDemoPage(project);
+        generateDemoPage(project).then(e=>this.shadowRoot.querySelector("#iframe").srcdoc = e);
       }
       sendMessage(msg) {
         this.shadowRoot.querySelector("#iframe").contentWindow.postMessage(msg, "*");
@@ -1291,6 +1350,15 @@
         css:"css",
       };
       return list[ext];
+    }
+    const getMimeTypeFromFileName = fileName => {
+      const language = getLanguageFromFileName(fileName);
+      const list = new Map(Object.entries({
+        html:"text/html",
+        javascript:"text/javascript",
+        css:"text/css",
+      }));
+      return list.get(language);
     }
     require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@latest/min/vs' }});
     const proxy = URL.createObjectURL(new Blob([`
