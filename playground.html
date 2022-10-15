@@ -518,6 +518,10 @@
             alert("初期ファイルは削除できません");
             return;
           }
+          if(file.type==="folder" && this.#hasEntryFile(file)){
+            alert("フォルダ内に初期ファイルが含まれているので削除できません");
+            return;
+          }
           if(confirm(`${getFileTypeName(file)}名：${file.name}を削除してもよろしいですか？`)){
             this.updateProjects(()=>{
               if(project.tabs.includes(file.id)){
@@ -672,6 +676,11 @@
         if(file.type!=="folder") return false;
         if(file.files === toFiles) return true;
         return !!this.#searchFiles(file.files, f=>f.files===toFiles, "folder");
+      }
+      #hasEntryFile(folder){
+        if(folder.type!="folder") return false;
+        const pro = this.getCurrentProject();
+        return !!this.#searchFiles(folder.files, f=>f.id===pro.entryFile);
       }
       getOpenedFile() {
         const pro = this.getCurrentProject();
