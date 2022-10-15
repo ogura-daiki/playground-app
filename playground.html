@@ -479,6 +479,21 @@
             .files_area .files .menu_button i{
               font-size:1.4em;
             }
+            tree-file{
+              display:contents;
+            }
+            tree-file.root{
+              display:block;
+              min-width:fit-content;
+            }
+            tree-file .menu{
+              pointer-events:none;
+              opacity:0;
+            }
+            tree-file:hover>*>.menu{
+              pointer-events:auto;
+              opacity:1;
+            }
           `
         ];
       }
@@ -784,7 +799,6 @@
         `
       }
       render() {
-        this.style.display = "contents";
         return html`
         <div
           class="${this.data.type} row"
@@ -802,7 +816,7 @@
             ${this.getIcon()}
           </div>
           <span>${this.data.name}</span>
-          <div class="row" style="margin-left:auto;gap:2px" @click=${e=>{
+          <div class="row menu" style="margin-left:auto;gap:2px" @click=${e=>{
             e.stopPropagation();
             e.preventDefault();
             return false;
