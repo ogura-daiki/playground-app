@@ -503,7 +503,13 @@
           this.requestUpdate();
         }
         const onRename = ({files,file,name})=>{
-          console.log(files.map(f=>f.name));
+          if(project.entryFile === file.id){
+            const lang = getLanguageFromFileName(name);
+            if(lang !== "html"){
+              alert(`初期ファイルはhtml文書である必要があります。`);
+              return;
+            }
+          }
           if(files.some(f=>f!==file&&f.name === name)){
             alert(`${getFileTypeName(file)}名：${name}はフォルダ内に既に存在します。`);
             return;
