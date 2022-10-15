@@ -448,8 +448,6 @@
               overflow-y:scroll;
             }
             tree-file.root{
-              display:block;
-              min-width:fit-content;
             }
           `
         ];
@@ -485,7 +483,7 @@
       }
       fileList() {
         const project = this.getCurrentProject();
-        const files = project.files;
+        //const files = project.files;
 
         const getFileTypeName = file => ({folder:"フォルダ",file:"ファイル"}[file.type]);
 
@@ -495,7 +493,7 @@
           this.openTab(project, file.id);
         }
         const onCreate = ({files, value:newFile})=>{
-          if(files.some(f=>equalsName(f, newFile))){
+          if(files.some(f=>f.name === newFile.name)){
             alert(`${getFileTypeName(newFile)}名：${newFile.name}はフォルダ内に既に存在します。`);
             return;
           }
@@ -505,7 +503,8 @@
           this.requestUpdate();
         }
         const onRename = ({files,file,name})=>{
-          if(files.some(f=>f!==file&&equalsName(f, file))){
+          console.log(files.map(f=>f.name));
+          if(files.some(f=>f!==file&&f.name === name)){
             alert(`${getFileTypeName(file)}名：${name}はフォルダ内に既に存在します。`);
             return;
           }
@@ -537,7 +536,7 @@
               <tree-file
                 class="root"
                 .open=${true}
-                .data=${{ name: project.name, type: "folder", files }}
+                .data=${{ name: project.name, type: "folder", files:project.files }}
                 .nest=${0}
                 @select=${({detail})=>onSelect(detail)}
                 @rename=${({detail})=>onRename(detail)}
@@ -719,6 +718,14 @@
         return [
           super.styles,
           css`
+            :host{
+              display:inline;
+              min-width:100%;
+              width:fit-content;
+            }
+            :host(.root){
+              display:block;
+            }
             :host(.root) .main{
               position:sticky;
               top:0px;
@@ -727,9 +734,24 @@
             }
             .main{
               box-shadow: rgba(255,255,255,.2) 0px 1px 0px 0px;
+              position:relative;
             }
             .main:hover{
               background: rgba(255,255,255,.2);
+              padding-right:4rem;
+            }
+            .name{
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+              min-width:8rem;
+            }
+            .main:hover .name{
+              min-width:0rem;
+            }
+            .icon{
+              min-width:1em;
+              width:1em;
             }
             .folder_arrow{
               font-family:monospace;
@@ -743,22 +765,44 @@
               background:transparent;
               border-radius:.2em;
               color:white;
-              width:2em;
-              aspect-ratio:1;
+              width:1.5rem;
             }
             .menu_button:where(:hover, :active){
               background:rgba(255,255,255,.2);
             }
             .menu_button i{
-              font-size:1.4em;
+              font-size:1rem;
             }
             .menu{
               pointer-events:none;
+              overflow:hidden;
               opacity:0;
+              gap:2px;
+              height:100%;
             }
             .main:hover .menu{
               pointer-events:auto;
               opacity:1;
+            }
+
+            .main {
+              display: grid;
+              grid-template-columns:min-content minmax(4rem, 1fr) min-content;
+              grid-template-rows: 1fr;
+              grid-template-areas: 'g1 g2 g3';
+            }
+            .main>*{
+              height:100%;
+            }
+
+            .area-g1 {
+              grid-area: g1;
+            }
+            .area-g2 {
+              grid-area: g2;
+            }
+            .area-g3 {
+              grid-area: g3;
             }
           `
         ]
@@ -806,7 +850,7 @@
       render() {
         return html`
         <div
-          class="${this.data.type} row main"
+          class="${this.data.type} main"
           style="gap:4px;padding-right:8px;align-items: center;"
           @click=${e => {
             if (this.data.type === "folder") {
@@ -816,79 +860,87 @@
             this.dispatchEvent(new CustomEvent("select", {detail:this.data, bubbles:true, composed: true,}));
           }}
         >
-          ${this.padLeft()}
-          <div class="centering" style="width:1em;">
-            ${this.getIcon()}
+          <div class='area-g1 row' style="overflow:hidden;gap:4px">
+            ${this.padLeft()}
+            <div class="centering icon">
+              ${this.getIcon()}
+            </div>
           </div>
-          <span>${this.data.name}</span>
-          <div class="row menu" style="margin-left:auto;gap:2px" @click=${e=>{
-            e.stopPropagation();
-            e.preventDefault();
-            return false;
-          }}>
-            ${this.nest?html`
-              <button class="centering menu_button" @click=${e=>{
-                const name = prompt({folder:"フォルダ",file:"ファイル"}[this.data.type]+"名を変更", this.data.name)?.trim();
-                if(name){
-                  this.dispatchEvent(new CustomEvent("rename", {
+          
+          <div class="area-g2 name grow">
+            ${this.data.name}
+          </div>
+          
+          <div class='area-g3'>
+            <div class="row menu" @click=${e=>{
+              e.stopPropagation();
+              e.preventDefault();
+              return false;
+            }}>
+              ${this.nest?html`
+                <button class="centering menu_button" @click=${e=>{
+                  const name = prompt({folder:"フォルダ",file:"ファイル"}[this.data.type]+"名を変更", this.data.name)?.trim();
+                  if(name){
+                    this.dispatchEvent(new CustomEvent("rename", {
+                      detail:{
+                        files:this.parent.files,
+                        file:this.data,
+                        name,
+                      },
+                      bubbles:true,
+                      composed: true,
+                    }));
+                    this.requestUpdate();
+                  }
+                }}><i>drive_file_rename_outline</i></button>
+                <button class="centering menu_button" @click=${e=>{
+                  this.dispatchEvent(new CustomEvent("delete", {
                     detail:{
                       files:this.parent.files,
                       file:this.data,
-                      name,
                     },
                     bubbles:true,
                     composed: true,
                   }));
-                  this.requestUpdate();
-                }
-              }}><i>drive_file_rename_outline</i></button>
-              <button class="centering menu_button" @click=${e=>{
-                this.dispatchEvent(new CustomEvent("delete", {
-                  detail:{
-                    files:this.parent.files,
-                    file:this.data,
-                  },
-                  bubbles:true,
-                  composed: true,
-                }));
-                this.dispatchEvent(new CustomEvent("deleted", {
-                  detail:{
-                    file:this.data,
-                  },
-                }));
-              }}><i>delete</i></button>
-            `:""}
-            ${this.data.type==="folder"?html`
-              <button class="centering menu_button" @click=${e=>{
-                const name = prompt("ファイル名を入力")?.trim();
-                if(name){
-                  this.dispatchEvent(new CustomEvent("create", {
+                  this.dispatchEvent(new CustomEvent("deleted", {
                     detail:{
-                      files:this.data.files,
-                      value:createFile({name}),
+                      file:this.data,
                     },
-                    bubbles:true,
-                    composed: true,
                   }));
-                  this.requestUpdate();
-                }
-              }}><i>note_add</i></button>
-              <button class="centering menu_button" @click=${e=>{
-                const name = prompt("フォルダ名を入力")?.trim();
-                if(name){
-                  this.dispatchEvent(new CustomEvent("create", {
-                    detail:{
-                      files:this.data.files,
-                      value:createFolder({name}),
-                    },
-                    bubbles:true,
-                  }));
-                  this.requestUpdate();
-                }
-              }}><i>create_new_folder</i></button>
-            `:""}
+                }}><i>delete</i></button>
+              `:""}
+              ${this.data.type==="folder"?html`
+                <button class="centering menu_button" @click=${e=>{
+                  const name = prompt("ファイル名を入力")?.trim();
+                  if(name){
+                    this.dispatchEvent(new CustomEvent("create", {
+                      detail:{
+                        files:this.data.files,
+                        value:createFile({name}),
+                      },
+                      bubbles:true,
+                      composed: true,
+                    }));
+                    this.requestUpdate();
+                  }
+                }}><i>note_add</i></button>
+                <button class="centering menu_button" @click=${e=>{
+                  const name = prompt("フォルダ名を入力")?.trim();
+                  if(name){
+                    this.dispatchEvent(new CustomEvent("create", {
+                      detail:{
+                        files:this.data.files,
+                        value:createFolder({name}),
+                      },
+                      bubbles:true,
+                    }));
+                    this.requestUpdate();
+                  }
+                }}><i>create_new_folder</i></button>
+              `:""}
+            </div>
           </div>
-        </div>
+        </div>        
         ${this.data.type === "folder" ? html`
         <div style="display:${this.open ? "contents" : "none"}">
           ${this.data.files.map(e =>
