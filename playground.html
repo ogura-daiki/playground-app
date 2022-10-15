@@ -540,7 +540,6 @@
         }
         const onMove = ({to, fileId})=>{
           const fromFiles = this.#findParentByFileId(fileId);
-          console.log({fromFiles, to})
           if(fromFiles === to.files){
             return;
           }
@@ -552,7 +551,6 @@
             return false;
           }
           const fromIdx = fromFiles.findIndex(f=>f.id === file.id);
-          //console.log({from, to});
           this.updateProjects(()=>{
             fromFiles.splice(fromIdx, 1);
             to.files.push(file);
@@ -674,7 +672,6 @@
         const pro = this.getCurrentProject();
         if(pro.files.some(f=>f.id===id)) return pro.files;
         return this.#searchFiles(pro.files, folder=>{
-          console.log(folder.files, folder.files.some(file=>file.id===id));
           return folder.files.some(file=>file.id===id);
         }, "folder")?.files;
       }
