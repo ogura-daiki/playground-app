@@ -1046,37 +1046,43 @@
       }
     });
 
-    const styleLoader = async () => {
-      const styles = await new Promise(resolve => {
-        window.addEventListener("message", ({ data }) => {
-          if (data.type = "styles") {
-            resolve(data.value);
+    const styleLoader = () => {
+      window.addEventListener("message", ({ data }) => {
+        if (data.type = "styles") {
+          const styles = data.value;
+          class StyleLoader extends HTMLElement {
+            constructor() {
+              super();
+              const styleName = this.getAttribute("href");
+              const styleSrc = styles[styleName] ?? "";
+              this.before(Object.assign(document.createElement("style"), { innerHTML: styleSrc }));
+              this.remove();
+            }
           }
-        }, false);
-        parent.postMessage("test", "*");
-      });
-      class StyleLoader extends HTMLElement {
-        constructor() {
-          super();
-          const styleName = this.getAttribute("href");
-          const styleSrc = styles[styleName] ?? "";
-          this.before(Object.assign(document.createElement("style"), { innerHTML: styleSrc }));
-          this.remove();
+          customElements.define("style-loader", StyleLoader);
         }
-      }
-      customElements.define("style-loader", StyleLoader);
+      }, false);
+      parent.postMessage("test", "*");
     }
 
-    const func2ScriptElem = (func, type) => {
+    const func2ScriptElem = (func, type="text/javascript") => {
       const str = func + "";
       const funcContentStr = str.replace(/^[^{]*{/, "").replace(/}[^}]*$/, "");
-      //インラインのスクリプトタグで定義しているので、直接閉じタグを使用するとHTMLの解析エラーになる
-      return `<script type="${type}">${funcContentStr}${"</"}script>`;
+      return Object.assign(document.createElement("script"), {textContent:funcContentStr, type});
     }
 
     const generateDemoPage = (input) => {
       const dom = new DOMParser().parseFromString(input, "text/html");
-      dom.body.innerHTML += func2ScriptElem(styleLoader, "module");
+      const anchor = [...(dom.querySelectorAll(`script[type="importmap"]`)||dom.body.children)].pop();
+      const scripts = {
+        styleLoader:func2ScriptElem(styleLoader),
+      };
+      if(anchor){
+        anchor.after(scripts.styleLoader);
+      }
+      else{
+        dom.body.append(scripts.styleLoader);
+      }
       return dom.documentElement.innerHTML;
     }
 
