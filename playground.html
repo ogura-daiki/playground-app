@@ -247,12 +247,19 @@
         this.files_opened = false;
 
         window.addEventListener("message", (event) => {
-          this.renderRoot.getElementById("demo-view").sendMessage({
-            type: "styles",
-            value: {
-              "test.css": `body{background:green}`,
+          const actionName = event.data?.action;
+          const actions = new Map(Object.entries({
+            requestStyles: data=>{
+              return {
+                type: "styles",
+                value: {
+                  "test.css": `body{background:green}`,
+                }
+              };
             }
-          });
+          }));
+          if(!actions.has(actionName)) return;
+          this.renderRoot.getElementById("demo-view").sendMessage(actions.get(actionName)(event.data));
         }, false);
       }
       static get styles() {
@@ -1062,7 +1069,7 @@
           customElements.define("style-loader", StyleLoader);
         }
       }, false);
-      parent.postMessage("test", "*");
+      parent.postMessage({action:"requestStyles"}, "*");
     }
 
     const func2ScriptElem = (func, type="text/javascript") => {
