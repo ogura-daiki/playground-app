@@ -813,7 +813,7 @@
               this.open = !this.open;
               return;
             }
-            this.dispatchEvent(new CustomEvent("select", {detail:this.data, bubbles:true}));
+            this.dispatchEvent(new CustomEvent("select", {detail:this.data, bubbles:true, composed: true,}));
           }}
         >
           ${this.padLeft()}
@@ -837,6 +837,7 @@
                       name,
                     },
                     bubbles:true,
+                    composed: true,
                   }));
                   this.requestUpdate();
                 }
@@ -848,6 +849,7 @@
                     file:this.data,
                   },
                   bubbles:true,
+                  composed: true,
                 }));
                 this.dispatchEvent(new CustomEvent("deleted", {
                   detail:{
@@ -866,8 +868,9 @@
                       value:createFile({name}),
                     },
                     bubbles:true,
+                    composed: true,
                   }));
-                  this.dispatchEvent(new CustomEvent("deleted", {bubbles:true}));
+                  this.requestUpdate();
                 }
               }}><i>note_add</i></button>
               <button class="centering menu_button" @click=${e=>{
