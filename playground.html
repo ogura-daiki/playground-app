@@ -523,14 +523,12 @@
           this.openTab(project, file.id);
         }
         const onCreate = ({files, value:newFile})=>{
-          console.log(files, newFile)
           if(files.some(f=>equalsName(f, newFile))){
             alert(`${getFileTypeName(newFile)}名：${newFile.name}はフォルダ内に既に存在します。`);
             return;
           }
           this.updateProjects(()=>{
             files.push(newFile);
-            console.log(files)
           });
           this.requestUpdate();
         }
@@ -645,7 +643,6 @@
             return files.some(file=>{
               if(file.type==="file"){
                 const result = callback(file);
-                //console.log(file.id === id, file)
                 if(result){
                   value.push(file);
                 }
