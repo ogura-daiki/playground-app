@@ -700,9 +700,9 @@
                   <div class="grow code_area">
                     ${(this.getCurrentProject().opened!=null
                       ?()=>html`
-                        <monaco-editor .filename=${projectUtil.getOpenedFile().name} .value=${projectUtil.getOpenedFile().value} id="input" class="fill" @input=${e => {
+                        <monaco-editor .file=${projectUtil.getOpenedFile()} id="input" class="fill" @input=${e => {
                           this.updateProjects(ps => {
-                            projectUtil.getOpenedFile().value = e.target.value;
+                            projectUtil.getOpenedFile().value = e.target.file.value;
                           });
                           this.updater.push(this.config.refresh_wait, {
                             auto_refresh: this.config.auto_refresh
@@ -1367,20 +1367,25 @@
     window.MonacoEnvironment = { getWorkerUrl: () => proxy };
     const loadEditor = new Promise(resolve=>{require(["vs/editor/editor.main"], resolve)});
 
-    class MonacoEditor extends LitElement{
+    class MonacoEditor extends HTMLElement{
       static get properties(){
         return {
           filename:{type:String},
           theme:{type:String},
+          _update:{state:true},
         };
       }
-      #value;
+      #file;
       #editor;
       constructor(){
         super();
-        this.#value="";
-        this.filename="newfile.html";
+        this.#file={};
         this.theme="vs-dark";
+        this.attachShadow({mode:"open"});
+        this.shadowRoot.innerHTML=`
+        <style>${this.constructor.styles}</style>
+        ${this.render()}
+        `;
       }
       static get styles(){
         return css`
@@ -1401,30 +1406,37 @@
         `;
       }
       render(){
-        return html`
+        return `
         <link rel="stylesheet" href="https://unpkg.com/monaco-editor@0.34.0/min/vs/editor/editor.main.css"></link>
         <div id=editor></div>
         `
       }
-      updated() {
+      update() {
         loadEditor.then(e=>{
           if(this.#editor){
-            this.#editor.getModel().setValue(this.value);
-            monaco.editor.setModelLanguage(this.#editor.getModel(), getLanguageFromFileName(this.filename));
+            this.#editor.getModel().setValue(this.#file.value);
+            monaco.editor.setModelLanguage(this.#editor.getModel(), getLanguageFromFileName(this.#file.name));
             monaco.editor.setTheme(this.theme);
             return;
           }
-          this.#editor = monaco.editor.create(this.renderRoot.querySelector("#editor"), {
-            value: this.value,
-            language: getLanguageFromFileName(this.filename),
+          this.#editor = monaco.editor.create(this.shadowRoot.querySelector("#editor"), {
+            value: this.#file.value,
+            language: getLanguageFromFileName(this.#file.name),
             theme: this.theme,
             automaticLayout: true,
           });
           this.#editor.getModel().onDidChangeContent((event) => {
-            this.value = this.#editor.getValue();
-            this.dispatchEvent(new Event("input"))
+            this.#file.value = this.#editor.getValue();
+            this.dispatchEvent(new Event("input"));
           });
         });
+      }
+      set file(val){
+        this.#file = val;
+        this.update();
+      }
+      get file(){
+        return this.#file;
       }
     }
     customElements.define("monaco-editor", MonacoEditor);
