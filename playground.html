@@ -109,6 +109,67 @@
     });
   </script>
   <script>
+    (()=>{
+      
+      const ProjectUtil = pro => ({
+        __searchFiles(files, callback, {type="file", multiple=false, path=""}={}){
+          const value = [];
+            const walk = (files, path) => {
+              return files.some(file=>{
+                if(type === "all" || file.type===type){
+                  const result = callback(file);
+                  if(result){
+                    value.push({file, path:path+file.name});
+                    return multiple;
+                  }
+                }
+                if(file.type=="folder"){
+                  return walk(file.files, path+file.name+"/") && multiple;
+                }
+              })
+            }
+            walk(files, path);
+            if(multiple){
+              return value;
+            }
+            return value[0];
+        },
+        findFileById(id) {
+          return this.__searchFiles(pro.files, file=>file.id === id)?.file;
+        },
+        findFileObjFromId(id) {
+          return this.__searchFiles(pro.files, f=>f.id === id, {type:"all"})?.file;
+        },
+        findParentByFileId(id) {
+          if(pro.files.some(f=>f.id===id)) return pro.files;
+          return this.__searchFiles(pro.files, folder=>{
+            return folder.files.some(file=>file.id===id);
+          }, {type:"folder"})?.file.files;
+        },
+        hasRefLoop(toFiles, file){
+          if(file.type!=="folder") return false;
+          if(file.files === toFiles) return true;
+          return !!this.__searchFiles(file.files, f=>f.files===toFiles, {type:"folder"});
+        },
+        hasEntryFile(folder){
+          if(folder.type!="folder") return false;
+          return !!this.__searchFiles(folder.files, f=>f.id===pro.entryFile);
+        },
+        getOpenedFile() {
+          return this.findFileById(pro.opened);
+        },
+        findFilesByLanguage(language){
+          return this.__searchFiles(pro.files, f=>getLanguageFromFileName(f.name)===language, {multiple:true});
+        },
+        procToFiles(callback) {
+          this.__searchFiles(pro.files, callback, {multiple:true});
+        }
+      });
+      addReadOnly(window, {ProjectUtil});
+
+    })()
+  </script>
+  <script>
 
     //ほぼほぼ重複しないIDを生成
     const createId = () => `${Date.now()}-${crypto.randomUUID()}`;
@@ -131,48 +192,66 @@
     };
     window.newProject = newProject;
 
-    const migrationsMap = {
-      "config": [
-        {
-          v: 0,
-          up: () => {
-            return {
-              layout: 1,
-              refresh_wait: 1000,
-              auto_refresh: false,
-            };
-          }
-        },
-      ],
-      "ctx": [
-        {
-          v: 0,
-          up: () => {
-            return {
-              value: "",
+    const Models = {
+      "config": {
+        migrations:[
+          {
+            v: 0,
+            up: () => {
+              return {
+                layout: 1,
+                refresh_wait: 1000,
+                auto_refresh: false,
+              };
             }
-          }
-        },
-        {
-          v: 1,
-          up: () => {
-            return {
-              project: initialProjectId,
+          },
+        ],
+      },
+      "ctx": {
+        migrations:[
+          {
+            v: 0,
+            up: () => {
+              return {
+                value: "",
+              }
             }
-          }
-        },
-      ],
-      "projects": [
-        {
-          v: 0,
-          up: () => {
-            return [
-              newProject("新規プロジェクト"),
-            ];
-          }
-        },
-      ]
-    };
+          },
+          {
+            v: 1,
+            up: () => {
+              return {
+                project: initialProjectId,
+              }
+            }
+          },
+        ],
+      },
+      "projects": {
+        migrations:[
+          {
+            v: 0,
+            up: () => {
+              return [
+                newProject("新規プロジェクト"),
+              ];
+            }
+          },
+        ],
+        beforeReturn: (projects) => {
+          projects.forEach(project=>ProjectUtil(project).procToFiles(file=>{
+            Object.defineProperty(file, "stringValue", {
+              get (){
+                return binaryString2String(this.value);
+              },
+              set (val){
+                this.value = string2BinaryString(val);
+              }
+            })
+          }))
+        }
+      },
+    }
 
     const store = {
       get(key) {
@@ -183,8 +262,7 @@
       },
     };
 
-    const getValue = key => {
-      const migrations = migrationsMap[key];
+    const migrate = (key, obj, migrations) => {
       //現在のバージョンを取得
       const version = store.get("version-" + key);
       //実施する必要のあるmigrationを取得
@@ -195,8 +273,6 @@
       }
       const migrationList = migrations.slice(current + 1);
 
-      //保存されている内容を取得
-      let obj = store.get("store-" + key);
 
       //実施すべきmigrationが無い場合は最新の状態になっているのでそのまま返す。
       if (migrationList.length === 0) return obj;
@@ -208,7 +284,20 @@
       const lastMigration = migrationList.pop();
       store.set("version-" + key, lastMigration.v);
       setValue(key, migrated);
+
       return migrated;
+    }
+
+    const getValue = key => {
+      //保存されている内容を取得
+      let obj = store.get("store-" + key);
+      const model = Models[key];
+      obj = migrate(key, obj, model.migrations);
+      
+      //前処理
+      (model.beforeReturn??(()=>{}))(obj);
+
+      return obj;
     }
 
     const setValue = (key, obj) => {
@@ -307,58 +396,6 @@
         },
       };
     }
-
-    const ProjectUtil = pro => ({
-      __searchFiles(files, callback, {type="file", multiple=false, path=""}={}){
-        const value = [];
-          const walk = (files, path) => {
-            return files.some(file=>{
-              if(type === "all" || file.type===type){
-                const result = callback(file);
-                if(result){
-                  value.push({file, path:path+file.name});
-                  return multiple;
-                }
-              }
-              if(file.type=="folder"){
-                return walk(file.files, path+file.name+"/") && multiple;
-              }
-            })
-          }
-          walk(files, path);
-          if(multiple){
-            return value;
-          }
-          return value[0];
-      },
-      findFileById(id) {
-        return this.__searchFiles(pro.files, file=>file.id === id)?.file;
-      },
-      findFileObjFromId(id) {
-        return this.__searchFiles(pro.files, f=>f.id === id, {type:"all"})?.file;
-      },
-      findParentByFileId(id) {
-        if(pro.files.some(f=>f.id===id)) return pro.files;
-        return this.__searchFiles(pro.files, folder=>{
-          return folder.files.some(file=>file.id===id);
-        }, {type:"folder"})?.file.files;
-      },
-      hasRefLoop(toFiles, file){
-        if(file.type!=="folder") return false;
-        if(file.files === toFiles) return true;
-        return !!this.__searchFiles(file.files, f=>f.files===toFiles, {type:"folder"});
-      },
-      hasEntryFile(folder){
-        if(folder.type!="folder") return false;
-        return !!this.__searchFiles(folder.files, f=>f.id===pro.entryFile);
-      },
-      getOpenedFile() {
-        return this.findFileById(pro.opened);
-      },
-      findFilesByLanguage(language){
-        return this.__searchFiles(pro.files, f=>getLanguageFromFileName(f.name)===language, {multiple:true});
-      },
-    });
 
     class PlayGroundApp extends BaseElement {
       static get properties() {
@@ -788,7 +825,7 @@
                         <monaco-editor .file=${projectUtil.getOpenedFile()} id="input" class="fill" @updateValue=${e => {
                           const {file, newVal} = e.detail;
                           this.updateProjects(ps => {
-                            file.value = string2BinaryString(newVal);
+                            file.stringValue = newVal;
                           });
                           this.updater.push(this.config.refresh_wait, {
                             auto_refresh: this.config.auto_refresh
@@ -1500,13 +1537,13 @@
       update() {
         loadEditor.then(e=>{
           if(this.#editor){
-            this.#editor.getModel().setValue(binaryString2String(this.#file.value));
+            this.#editor.getModel().setValue(this.#file.stringValue);
             monaco.editor.setModelLanguage(this.#editor.getModel(), getLanguageFromFileName(this.#file.name));
             monaco.editor.setTheme(this.theme);
             return;
           }
           this.#editor = monaco.editor.create(this.shadowRoot.querySelector("#editor"), {
-            value: binaryString2String(this.#file.value),
+            value: this.#file.stringValue,
             language: getLanguageFromFileName(this.#file.name),
             theme: this.theme,
             automaticLayout: true,
