@@ -59,7 +59,8 @@
     }
     const binaryString2Array = binStr => Uint8Array.from(binStr.split(""), e => e.charCodeAt(0));
     const binaryString2String = binStr => new TextDecoder().decode(binaryString2Array(binStr));
-    addReadOnly(window, {string2BinaryString, binaryString2String});
+    const binaryString2DataURI = (binStr, mimeType) => `data:${mimeType};charset=utf-8;base64,${btoa(binStr)}`;
+    addReadOnly(window, {string2BinaryString, binaryString2String, binaryString2DataURI});
 
     const array2BinaryString = array => {
       let binaryStr = "";
@@ -68,7 +69,6 @@
       }
       return binaryStr;
     }
-    const binaryString2DataURI = (binStr, mimeType) => `data:${mimeType};base64,${btoa(binStr)}`;
 
     const FileUtil = async file => {
       const array = await file2Array(file);
@@ -265,7 +265,12 @@
               set (val){
                 this.value = string2BinaryString(val);
               }
-            })
+            });
+            Object.defineProperty(file, "dataURI", {
+              get (){
+                return binaryString2DataURI(this.value, getMimeTypeFromFileName(this.name))
+              },
+            });
           }))
         }
       },
