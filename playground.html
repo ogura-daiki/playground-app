@@ -54,6 +54,13 @@
         return src.every(d=>charSet.has(d));
       }
     })();
+    const string2BinaryString = string => {
+      return array2BinaryString(new TextEncoder().encode(string));
+    }
+    const binaryString2Array = binStr => Uint8Array.from(binStr.split(""), e => e.charCodeAt(0));
+    const binaryString2String = binStr => new TextDecoder().decode(binaryString2Array(binStr));
+    addReadOnly(window, {string2BinaryString, binaryString2String});
+
     const array2BinaryString = array => {
       let binaryStr = "";
       for(const part of array){
@@ -62,6 +69,7 @@
       return binaryStr;
     }
     const binaryString2DataURI = (binStr, mimeType) => `data:${mimeType};base64,${btoa(binStr)}`;
+
     const FileUtil = async file => {
       const array = await file2Array(file);
       return {
@@ -777,9 +785,10 @@
                   <div class="grow code_area">
                     ${(this.getCurrentProject().opened!=null
                       ?()=>html`
-                        <monaco-editor .file=${projectUtil.getOpenedFile()} id="input" class="fill" @input=${e => {
+                        <monaco-editor .file=${projectUtil.getOpenedFile()} id="input" class="fill" @updateValue=${e => {
+                          const {file, newVal} = e.detail;
                           this.updateProjects(ps => {
-                            projectUtil.getOpenedFile().value = e.target.file.value;
+                            file.value = string2BinaryString(newVal);
                           });
                           this.updater.push(this.config.refresh_wait, {
                             auto_refresh: this.config.auto_refresh
@@ -1178,7 +1187,7 @@
     const generateDemoPage = async (project) => {
       const projectUtil = ProjectUtil(project);
       const entryFile = projectUtil.findFileById(project.entryFile);
-      const dom = new DOMParser().parseFromString(entryFile.value, "text/html");
+      const dom = new DOMParser().parseFromString(binaryString2String(entryFile.value), "text/html");
       
       if(!dom.querySelector(`script[type="importmap"]`)){
         dom.head.insertBefore(Object.assign(document.createElement("script"), {type:"importmap"}), dom.head.firstChild);
@@ -1186,7 +1195,7 @@
       const importMapScript = [...dom.querySelectorAll(`script[type="importmap"]`)].pop();
       const importsMap = JSON.parse(importMapScript.textContent||JSON.stringify({"imports":{}}));
       const scriptFiles = projectUtil.findFilesByLanguage("javascript");
-      const dataUris = await Promise.all(scriptFiles.map(({path,file}) => file2DataUri(file.name, file.value).then(data=>({path,data}))));
+      const dataUris = await Promise.all(scriptFiles.map(({path,file}) => file2DataUri(file.name, binaryString2String(file.value)).then(data=>({path,data}))));
       dataUris.forEach(({path, data})=>{
         importsMap.imports[path] = data;
       });
@@ -1204,7 +1213,7 @@
                 .findFilesByLanguage("css")
                 .reduce(
                   (o,{path,file})=>
-                    Object.assign(o,{[path]:file.value})
+                    Object.assign(o,{[path]:binaryString2String(file.value)})
                   ,{}
                 )
             )
@@ -1219,7 +1228,7 @@
             textContent:JSON.stringify(
               scriptFiles.reduce((o,{path,file})=>Object.assign(
                 o,
-                {[path]:file.value}
+                {[path]:binaryString2String(file.value)}
               ),{})
             )
           }
@@ -1491,13 +1500,13 @@
       update() {
         loadEditor.then(e=>{
           if(this.#editor){
-            this.#editor.getModel().setValue(this.#file.value);
+            this.#editor.getModel().setValue(binaryString2String(this.#file.value));
             monaco.editor.setModelLanguage(this.#editor.getModel(), getLanguageFromFileName(this.#file.name));
             monaco.editor.setTheme(this.theme);
             return;
           }
           this.#editor = monaco.editor.create(this.shadowRoot.querySelector("#editor"), {
-            value: this.#file.value,
+            value: binaryString2String(this.#file.value),
             language: getLanguageFromFileName(this.#file.name),
             theme: this.theme,
             automaticLayout: true,
