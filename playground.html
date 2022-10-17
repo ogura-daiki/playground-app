@@ -109,65 +109,83 @@
     });
   </script>
   <script>
-    (()=>{
-      
-      const ProjectUtil = pro => ({
-        __searchFiles(files, callback, {type="file", multiple=false, path=""}={}){
-          const value = [];
-            const walk = (files, path) => {
-              return files.some(file=>{
-                if(type === "all" || file.type===type){
-                  const result = callback(file);
-                  if(result){
-                    value.push({file, path:path+file.name});
-                    return multiple;
-                  }
-                }
-                if(file.type=="folder"){
-                  return walk(file.files, path+file.name+"/") && multiple;
-                }
-              })
-            }
-            walk(files, path);
-            if(multiple){
-              return value;
-            }
-            return value[0];
-        },
-        findFileById(id) {
-          return this.__searchFiles(pro.files, file=>file.id === id)?.file;
-        },
-        findFileObjFromId(id) {
-          return this.__searchFiles(pro.files, f=>f.id === id, {type:"all"})?.file;
-        },
-        findParentByFileId(id) {
-          if(pro.files.some(f=>f.id===id)) return pro.files;
-          return this.__searchFiles(pro.files, folder=>{
-            return folder.files.some(file=>file.id===id);
-          }, {type:"folder"})?.file.files;
-        },
-        hasRefLoop(toFiles, file){
-          if(file.type!=="folder") return false;
-          if(file.files === toFiles) return true;
-          return !!this.__searchFiles(file.files, f=>f.files===toFiles, {type:"folder"});
-        },
-        hasEntryFile(folder){
-          if(folder.type!="folder") return false;
-          return !!this.__searchFiles(folder.files, f=>f.id===pro.entryFile);
-        },
-        getOpenedFile() {
-          return this.findFileById(pro.opened);
-        },
-        findFilesByLanguage(language){
-          return this.__searchFiles(pro.files, f=>getLanguageFromFileName(f.name)===language, {multiple:true});
-        },
-        procToFiles(callback) {
-          this.__searchFiles(pro.files, callback, {multiple:true});
-        }
-      });
-      addReadOnly(window, {ProjectUtil});
 
-    })()
+    
+    const getLanguageFromFileName = fileName => {
+      const ext = fileName.match(/\.(?<ext>[^.]+)$/)?.groups.ext;
+      const list = {
+        html:"html",
+        htm:"html",
+        js:"javascript",
+        css:"css",
+      };
+      return list[ext];
+    }
+    const getMimeTypeFromFileName = fileName => {
+      const language = getLanguageFromFileName(fileName);
+      const list = new Map(Object.entries({
+        html:"text/html",
+        javascript:"text/javascript",
+        css:"text/css",
+      }));
+      return list.get(language);
+    }
+
+    const ProjectUtil = pro => ({
+      __searchFiles(files, callback, {type="file", multiple=false, path=""}={}){
+        const value = [];
+          const walk = (files, path) => {
+            return files.some(file=>{
+              if(type === "all" || file.type===type){
+                const result = callback(file);
+                if(result){
+                  value.push({file, path:path+file.name});
+                  return multiple;
+                }
+              }
+              if(file.type=="folder"){
+                return walk(file.files, path+file.name+"/") && multiple;
+              }
+            })
+          }
+          walk(files, path);
+          if(multiple){
+            return value;
+          }
+          return value[0];
+      },
+      findFileById(id) {
+        return this.__searchFiles(pro.files, file=>file.id === id)?.file;
+      },
+      findFileObjFromId(id) {
+        return this.__searchFiles(pro.files, f=>f.id === id, {type:"all"})?.file;
+      },
+      findParentByFileId(id) {
+        if(pro.files.some(f=>f.id===id)) return pro.files;
+        return this.__searchFiles(pro.files, folder=>{
+          return folder.files.some(file=>file.id===id);
+        }, {type:"folder"})?.file.files;
+      },
+      hasRefLoop(toFiles, file){
+        if(file.type!=="folder") return false;
+        if(file.files === toFiles) return true;
+        return !!this.__searchFiles(file.files, f=>f.files===toFiles, {type:"folder"});
+      },
+      hasEntryFile(folder){
+        if(folder.type!="folder") return false;
+        return !!this.__searchFiles(folder.files, f=>f.id===pro.entryFile);
+      },
+      getOpenedFile() {
+        return this.findFileById(pro.opened);
+      },
+      findFilesByLanguage(language){
+        return this.__searchFiles(pro.files, f=>getLanguageFromFileName(f.name)===language, {multiple:true});
+      },
+      procToFiles(callback) {
+        this.__searchFiles(pro.files, callback, {multiple:true});
+      }
+    });
+
   </script>
   <script>
 
@@ -1461,25 +1479,6 @@
 
     customElements.define("split-panel", Split);
 
-    const getLanguageFromFileName = fileName => {
-      const ext = fileName.match(/\.(?<ext>[^.]+)$/)?.groups.ext;
-      const list = {
-        html:"html",
-        htm:"html",
-        js:"javascript",
-        css:"css",
-      };
-      return list[ext];
-    }
-    const getMimeTypeFromFileName = fileName => {
-      const language = getLanguageFromFileName(fileName);
-      const list = new Map(Object.entries({
-        html:"text/html",
-        javascript:"text/javascript",
-        css:"text/css",
-      }));
-      return list.get(language);
-    }
     require.config({ paths: { 'vs': 'https://unpkg.com/monaco-editor@latest/min/vs' }});
     const proxy = URL.createObjectURL(new Blob([`
       self.MonacoEnvironment = {
