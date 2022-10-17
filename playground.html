@@ -22,6 +22,18 @@
 </head>
 
 <body>
+  <script>
+    (()=>{
+      const addReadOnly = (toObj, map={})=>{
+        const properties = Object.entries(map).reduce((o, [name, value])=>{
+          o[name] = {value, writable:false};
+          return o;
+        },{});
+        Object.defineProperties(toObj, properties);
+      };
+      addReadOnly(window, {addReadOnly});
+    })();
+  </script>
   <script type="module">
     import Encoding from "https://cdn.skypack.dev/encoding-japanese";
 
@@ -1491,8 +1503,7 @@
             automaticLayout: true,
           });
           this.#editor.getModel().onDidChangeContent((event) => {
-            this.#file.value = this.#editor.getValue();
-            this.dispatchEvent(new Event("input"));
+            this.dispatchEvent(new CustomEvent("updateValue", {detail:{file:this.#file, newVal:this.#editor.getValue()}}));
           });
         });
       }
