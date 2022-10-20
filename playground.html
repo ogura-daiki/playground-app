@@ -19,16 +19,24 @@
       padding: 0px;
     }
   </style>
+  <script src="./isLocalhost.js"></script>
   <script>
     const registerServiceWorker = async () => {
       if ('serviceWorker' in navigator) {
         try {
-          const registration = await navigator.serviceWorker.register(
-            '/playground-app/sw.js',
-            {
-              scope: '/playground-app/',
+          const {path, options} = 
+            isLocalhost?{
+              path:"/sw.js",
+              options:{
+              }
             }
-          );
+            /*else*/:{
+              path:"/playground-app/sw.js",
+              options:{
+                scope:"/playground-app/"
+              }
+            };
+          const registration = await navigator.serviceWorker.register(path, options);
           if (registration.installing) {
             console.log('Service worker installing');
           } else if (registration.waiting) {

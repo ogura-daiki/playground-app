@@ -7,8 +7,10 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
 
+importScripts("./isLocalhost.js");
+
 self.addEventListener("fetch", e=>{
-  console.log(location);
+  console.log(isLocalhost);
   if(new URL(e.request.url).pathname.split("/").map(v=>v.trim()).filter(v=>v).pop() === "test2.html"){
     e.respondWith(new Response(new Blob([`Upgrade or make this repository public to enable Pages
     GitHub Pages is designed to host your personal, organization, or project pages from a GitHub repository.
