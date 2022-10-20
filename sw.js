@@ -18,11 +18,13 @@ const files = new Map(Object.entries({
     GitHub Pages is designed to host your personal, organization, or project pages from a GitHub repository.
       
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jschardet/3.0.0/jschardet.min.js"></script>
-    <script>
-        console.log(jschardet);
-    </script>
+    <script src="temp.js"></script>
     `,
   },
+  "/temp.js":{
+    type:"text/javascript",
+    value:`console.log(jschardet);`
+  }
 }));
 const getFile = (url)=>{
   const baseURL = location.origin+(isLocalhost?"":"/playground-app");
