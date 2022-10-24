@@ -63,6 +63,61 @@
 
   </script>
   <script>
+    
+    const projectProto = {
+      __searchFiles(files, callback, {type="file", multiple=false, path=""}={}){
+        const value = [];
+          const walk = (files, path) => {
+            return files.some(file=>{
+              if(type === "all" || file.type===type){
+                const result = callback(file);
+                if(result){
+                  value.push({file, path:path+file.name});
+                  return multiple;
+                }
+              }
+              if(file.type=="folder"){
+                return walk(file.files, path+file.name+"/") && multiple;
+              }
+            })
+          }
+          walk(files, path);
+          if(multiple){
+            return value;
+          }
+          return value[0];
+      },
+      findFileById(id) {
+        return this.__searchFiles(this.files, file=>file.id === id)?.file;
+      },
+      findFileObjFromId(id) {
+        return this.__searchFiles(this.files, f=>f.id === id, {type:"all"})?.file;
+      },
+      findParentByFileId(id) {
+        if(this.files.some(f=>f.id===id)) return this.files;
+        return this.__searchFiles(this.files, folder=>{
+          return folder.files.some(file=>file.id===id);
+        }, {type:"folder"})?.file.files;
+      },
+      hasRefLoop(toFiles, file){
+        if(file.type!=="folder") return false;
+        if(file.files === toFiles) return true;
+        return !!this.__searchFiles(file.files, f=>f.files===toFiles, {type:"folder"});
+      },
+      hasEntryFile(folder){
+        if(folder.type!="folder") return false;
+        return !!this.__searchFiles(folder.files, f=>f.id===this.entryFile);
+      },
+      getOpenedFile() {
+        return this.findFileById(this.opened);
+      },
+      findFilesByLanguage(language){
+        return this.__searchFiles(this.files, f=>getLanguageFromFileName(f.name)===language, {multiple:true});
+      },
+      procToFiles(callback) {
+        this.__searchFiles(this.files, callback, {multiple:true});
+      }
+    };
 
     //ほぼほぼ重複しないIDを生成
     const createId = () => `${Date.now()}-${crypto.randomUUID()}`;
@@ -131,88 +186,33 @@
             }
           },
         ],
-        beforeReturn: (projects) => {
-          const projectProto = {
-            __searchFiles(files, callback, {type="file", multiple=false, path=""}={}){
-              const value = [];
-                const walk = (files, path) => {
-                  return files.some(file=>{
-                    if(type === "all" || file.type===type){
-                      const result = callback(file);
-                      if(result){
-                        value.push({file, path:path+file.name});
-                        return multiple;
-                      }
-                    }
-                    if(file.type=="folder"){
-                      return walk(file.files, path+file.name+"/") && multiple;
-                    }
-                  })
-                }
-                walk(files, path);
-                if(multiple){
-                  return value;
-                }
-                return value[0];
-            },
-            findFileById(id) {
-              return this.__searchFiles(this.files, file=>file.id === id)?.file;
-            },
-            findFileObjFromId(id) {
-              return this.__searchFiles(this.files, f=>f.id === id, {type:"all"})?.file;
-            },
-            findParentByFileId(id) {
-              if(this.files.some(f=>f.id===id)) return this.files;
-              return this.__searchFiles(this.files, folder=>{
-                return folder.files.some(file=>file.id===id);
-              }, {type:"folder"})?.file.files;
-            },
-            hasRefLoop(toFiles, file){
-              if(file.type!=="folder") return false;
-              if(file.files === toFiles) return true;
-              return !!this.__searchFiles(file.files, f=>f.files===toFiles, {type:"folder"});
-            },
-            hasEntryFile(folder){
-              if(folder.type!="folder") return false;
-              return !!this.__searchFiles(folder.files, f=>f.id===this.entryFile);
-            },
-            getOpenedFile() {
-              return this.findFileById(this.opened);
-            },
-            findFilesByLanguage(language){
-              return this.__searchFiles(this.files, f=>getLanguageFromFileName(f.name)===language, {multiple:true});
-            },
-            procToFiles(callback) {
-              this.__searchFiles(this.files, callback, {multiple:true});
-            }
-          };
-          return projects.map(project=>{
-            project = Object.assign(Object.create(projectProto), project);
-            console.log(project);
-            project.procToFiles(file=>{
-              Object.defineProperty(file, "stringValue", {
-                get (){
-                  return binaryString2String(this.value);
-                },
-                set (val){
-                  this.value = string2BinaryString(val);
-                }
-              });
-              Object.defineProperty(file, "dataURI", {
-                get (){
-                  return binaryString2DataURI(this.value, getMimeTypeFromFileName(this.name))
-                },
-              });
-            });
-            return project;
-          });
+        receiver: (name, value) => {
+          if(typeof value !== 'object') return value;
+          console.log({value})
+          if(typeof value?.entryFile === "string"){
+            return Object.assign(Object.create(projectProto), value);
+          }
+          if(value.type === "file"){
+            return Object.assign(Object.create({
+              get stringValue(){
+                return binaryString2String(this.value);
+              },
+              set stringValue(val){
+                this.value = string2BinaryString(val);
+              },
+              get dataURI(){
+                return binaryString2DataURI(this.value, getMimeTypeFromFileName(this.name))
+              },
+            }), value);
+          }
+          return value;
         }
       },
     }
 
     const store = {
-      get(key) {
-        return JSON.parse(localStorage.getItem(key));
+      get(key, receiver=((n,v)=>v)) {
+        return JSON.parse(localStorage.getItem(key)||"{}", receiver);
       },
       set(key, value) {
         return localStorage.setItem(key, JSON.stringify(value));
@@ -234,6 +234,8 @@
       //実施すべきmigrationが無い場合は最新の状態になっているのでそのまま返す。
       if (migrationList.length === 0) return obj;
 
+      console.log({migrationList:migrationList.map(m=>m.up+"")})
+
       //migrationを実施
       const migrated = migrationList.reduce((obj, m) => m.up(obj), obj);
 
@@ -246,15 +248,13 @@
     }
 
     const getValue = key => {
+      const model = Models[key];
       //保存されている内容を取得
       let obj = store.get("store-" + key);
-      const model = Models[key];
       obj = migrate(key, obj, model.migrations);
-      
-      //前処理
-      obj = (model.beforeReturn??(v=>v))(obj);
-
-      return obj;
+      store.set("store-"+key, obj);
+      console.log({key, obj}, store.get("store-"+key, model.receiver))
+      return store.get("store-"+key, model.receiver);
     }
 
     const setValue = (key, obj) => {
@@ -757,7 +757,8 @@
           return pro;
         }
         pro = this.projects[0];
-        this.ctx.project = this.projects[0].id;
+        console.log({pro, ctx:this.ctx})
+        this.ctx.project = pro.id;
         return pro;
       }
 
