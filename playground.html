@@ -269,6 +269,7 @@
 
   <script type="module">
     import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
+    import make from "./libs/make.js";
 
     const iconFonts = css`
     /**
@@ -302,7 +303,7 @@
       margin-top: -0.05em;
     }
     `;
-    document.head.append(Object.assign(document.createElement("style"),{textContent:iconFonts}));
+    document.head.append(make("style", {textContent:iconFonts}));
     class BaseElement extends LitElement{
       static get styles(){
         return [
@@ -1158,7 +1159,7 @@
     }
 
     const createScriptElem = (content, type="text/javascript") => {
-      return Object.assign(document.createElement("script"), {textContent:content, type});
+      return make("script", {textContent:content, type});
     }
     const getFuncContents = func => {
       const str = func + "";
@@ -1183,7 +1184,7 @@
       const dom = new DOMParser().parseFromString(binaryString2String(entryFile.value), "text/html");
       
       if(!dom.querySelector(`script[type="importmap"]`)){
-        dom.head.insertBefore(Object.assign(document.createElement("script"), {type:"importmap"}), dom.head.firstChild);
+        dom.head.insertBefore(make("script", {type:"importmap"}), dom.head.firstChild);
       }
       const importMapScript = [...dom.querySelectorAll(`script[type="importmap"]`)].pop();
       const importsMap = JSON.parse(importMapScript.textContent||JSON.stringify({"imports":{}}));
@@ -1196,36 +1197,30 @@
       importMapScript.textContent = JSON.stringify(importsMap);
 
       const scripts = [
-        Object.assign(
-          document.createElement("script"), 
-          {
-            type:"text/json",
-            id:"__imported_style_map",
-            textContent:JSON.stringify(
-              project
-                .findFilesByLanguage("css")
-                .reduce(
-                  (o,{path,file})=>
-                    Object.assign(o,{[path]:binaryString2String(file.value)})
-                  ,{}
-                )
-            )
-          }
-        ),
+        make("script", {
+          type:"text/json",
+          id:"__imported_style_map",
+          textContent:JSON.stringify(
+            project
+              .findFilesByLanguage("css")
+              .reduce(
+                (o,{path,file})=>
+                  Object.assign(o,{[path]:binaryString2String(file.value)})
+                ,{}
+              )
+          )
+        }),
         createScriptElem(`(()=>{${getFuncContents(styleLoader)}})()`),
-        Object.assign(
-          document.createElement("script"), 
-          {
-            type:"text/json",
-            id:"__imported_script_map",
-            textContent:JSON.stringify(
-              scriptFiles.reduce((o,{path,file})=>Object.assign(
-                o,
-                {[path]:binaryString2String(file.value)}
-              ),{})
-            )
-          }
-        ),
+        make("script", {
+          type:"text/json",
+          id:"__imported_script_map",
+          textContent:JSON.stringify(
+            scriptFiles.reduce((o,{path,file})=>Object.assign(
+              o,
+              {[path]:binaryString2String(file.value)}
+            ),{})
+          )
+        }),
         createScriptElem(`(()=>{${getFuncContents(scriptLoader)}})()`),
       ];
       if(importMapScript){
