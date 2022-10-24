@@ -134,8 +134,6 @@
       return list.get(language);
     }
 
-    const ProjectUtil = pro => pro;
-
   </script>
   <script>
 
@@ -678,7 +676,6 @@
       }
       fileList() {
         const project = this.getCurrentProject();
-        const projectUtil = ProjectUtil(project);
         //const files = project.files;
 
         const getFileTypeName = file => ({folder:"フォルダ",file:"ファイル"}[file.type]);
@@ -720,7 +717,7 @@
             alert("初期ファイルは削除できません");
             return;
           }
-          if(file.type==="folder" && projectUtil.hasEntryFile(file)){
+          if(file.type==="folder" && project.hasEntryFile(file)){
             alert("フォルダ内に初期ファイルが含まれているので削除できません");
             return;
           }
@@ -735,15 +732,15 @@
           }
         }
         const onMove = ({to, fileId})=>{
-          const fromFiles = projectUtil.findParentByFileId(fileId);
+          const fromFiles = project.findParentByFileId(fileId);
           if(fromFiles === to.files){
             return;
           }
-          const file = projectUtil.findFileObjFromId(fileId);
+          const file = project.findFileObjFromId(fileId);
           if(to.files.some(f=>f.name===file.name)){
             return;
           }
-          if(projectUtil.hasRefLoop(to.files, file)){
+          if(project.hasRefLoop(to.files, file)){
             return false;
           }
           const fromIdx = fromFiles.findIndex(f=>f.id === file.id);
@@ -801,8 +798,7 @@
       }
       fileTabs(){
         const pro = this.getCurrentProject();
-        const projectUtil = ProjectUtil(pro);
-        console.log(projectUtil)
+        console.log(pro)
         return html`
         <div class="row file_tabs scroll_overlay">
           <button
@@ -813,7 +809,7 @@
             <div class="row file_tab ${pro.opened === id ? "open" : ""}"
               @click=${e=>this.selectTab(pro, id)}
             >
-              <span>${projectUtil.findFileById(id).name}</span>
+              <span>${pro.findFileById(id).name}</span>
               <i
                 class="centering close_button"
                 @click=${e=>{
@@ -838,7 +834,7 @@
       }
 
       render() {
-        const projectUtil = ProjectUtil(this.getCurrentProject());
+        const projectUtil = this.getCurrentProject();
         return html`
           <div class="col fill">
             <div class="top_bar row" style="background:darkblue;">
@@ -917,7 +913,7 @@
 
       #compileProject(){
         const project = this.getCurrentProject();
-        const entryFile = ProjectUtil(project).findFileById(project.entryFile);
+        const entryFile = project.findFileById(project.entryFile);
         return entryFile.value;
       }
     }
@@ -1256,8 +1252,7 @@
     });
 
     const generateDemoPage = async (project) => {
-      const projectUtil = ProjectUtil(project);
-      const entryFile = projectUtil.findFileById(project.entryFile);
+      const entryFile = project.findFileById(project.entryFile);
       const dom = new DOMParser().parseFromString(binaryString2String(entryFile.value), "text/html");
       
       if(!dom.querySelector(`script[type="importmap"]`)){
@@ -1265,7 +1260,7 @@
       }
       const importMapScript = [...dom.querySelectorAll(`script[type="importmap"]`)].pop();
       const importsMap = JSON.parse(importMapScript.textContent||JSON.stringify({"imports":{}}));
-      const scriptFiles = projectUtil.findFilesByLanguage("javascript");
+      const scriptFiles = project.findFilesByLanguage("javascript");
       const dataUris = await Promise.all(scriptFiles.map(({path,file}) => file2DataUri(file.name, binaryString2String(file.value)).then(data=>({path,data}))));
       dataUris.forEach(({path, data})=>{
         importsMap.imports[path] = data;
@@ -1280,7 +1275,7 @@
             type:"text/json",
             id:"__imported_style_map",
             textContent:JSON.stringify(
-              projectUtil
+              project
                 .findFilesByLanguage("css")
                 .reduce(
                   (o,{path,file})=>
