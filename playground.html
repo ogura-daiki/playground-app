@@ -134,60 +134,7 @@
       return list.get(language);
     }
 
-    const ProjectUtil = pro => ({
-      __searchFiles(files, callback, {type="file", multiple=false, path=""}={}){
-        const value = [];
-          const walk = (files, path) => {
-            return files.some(file=>{
-              if(type === "all" || file.type===type){
-                const result = callback(file);
-                if(result){
-                  value.push({file, path:path+file.name});
-                  return multiple;
-                }
-              }
-              if(file.type=="folder"){
-                return walk(file.files, path+file.name+"/") && multiple;
-              }
-            })
-          }
-          walk(files, path);
-          if(multiple){
-            return value;
-          }
-          return value[0];
-      },
-      findFileById(id) {
-        return this.__searchFiles(pro.files, file=>file.id === id)?.file;
-      },
-      findFileObjFromId(id) {
-        return this.__searchFiles(pro.files, f=>f.id === id, {type:"all"})?.file;
-      },
-      findParentByFileId(id) {
-        if(pro.files.some(f=>f.id===id)) return pro.files;
-        return this.__searchFiles(pro.files, folder=>{
-          return folder.files.some(file=>file.id===id);
-        }, {type:"folder"})?.file.files;
-      },
-      hasRefLoop(toFiles, file){
-        if(file.type!=="folder") return false;
-        if(file.files === toFiles) return true;
-        return !!this.__searchFiles(file.files, f=>f.files===toFiles, {type:"folder"});
-      },
-      hasEntryFile(folder){
-        if(folder.type!="folder") return false;
-        return !!this.__searchFiles(folder.files, f=>f.id===pro.entryFile);
-      },
-      getOpenedFile() {
-        return this.findFileById(pro.opened);
-      },
-      findFilesByLanguage(language){
-        return this.__searchFiles(pro.files, f=>getLanguageFromFileName(f.name)===language, {multiple:true});
-      },
-      procToFiles(callback) {
-        this.__searchFiles(pro.files, callback, {multiple:true});
-      }
-    });
+    const ProjectUtil = pro => pro;
 
   </script>
   <script>
@@ -260,21 +207,80 @@
           },
         ],
         beforeReturn: (projects) => {
-          projects.forEach(project=>ProjectUtil(project).procToFiles(file=>{
-            Object.defineProperty(file, "stringValue", {
-              get (){
-                return binaryString2String(this.value);
-              },
-              set (val){
-                this.value = string2BinaryString(val);
-              }
+          const projectProto = {
+            __searchFiles(files, callback, {type="file", multiple=false, path=""}={}){
+              const value = [];
+                const walk = (files, path) => {
+                  return files.some(file=>{
+                    if(type === "all" || file.type===type){
+                      const result = callback(file);
+                      if(result){
+                        value.push({file, path:path+file.name});
+                        return multiple;
+                      }
+                    }
+                    if(file.type=="folder"){
+                      return walk(file.files, path+file.name+"/") && multiple;
+                    }
+                  })
+                }
+                walk(files, path);
+                if(multiple){
+                  return value;
+                }
+                return value[0];
+            },
+            findFileById(id) {
+              return this.__searchFiles(this.files, file=>file.id === id)?.file;
+            },
+            findFileObjFromId(id) {
+              return this.__searchFiles(this.files, f=>f.id === id, {type:"all"})?.file;
+            },
+            findParentByFileId(id) {
+              if(this.files.some(f=>f.id===id)) return this.files;
+              return this.__searchFiles(this.files, folder=>{
+                return folder.files.some(file=>file.id===id);
+              }, {type:"folder"})?.file.files;
+            },
+            hasRefLoop(toFiles, file){
+              if(file.type!=="folder") return false;
+              if(file.files === toFiles) return true;
+              return !!this.__searchFiles(file.files, f=>f.files===toFiles, {type:"folder"});
+            },
+            hasEntryFile(folder){
+              if(folder.type!="folder") return false;
+              return !!this.__searchFiles(folder.files, f=>f.id===this.entryFile);
+            },
+            getOpenedFile() {
+              return this.findFileById(this.opened);
+            },
+            findFilesByLanguage(language){
+              return this.__searchFiles(this.files, f=>getLanguageFromFileName(f.name)===language, {multiple:true});
+            },
+            procToFiles(callback) {
+              this.__searchFiles(this.files, callback, {multiple:true});
+            }
+          };
+          return projects.map(project=>{
+            project = Object.assign(Object.create(projectProto), project);
+            console.log(project);
+            project.procToFiles(file=>{
+              Object.defineProperty(file, "stringValue", {
+                get (){
+                  return binaryString2String(this.value);
+                },
+                set (val){
+                  this.value = string2BinaryString(val);
+                }
+              });
+              Object.defineProperty(file, "dataURI", {
+                get (){
+                  return binaryString2DataURI(this.value, getMimeTypeFromFileName(this.name))
+                },
+              });
             });
-            Object.defineProperty(file, "dataURI", {
-              get (){
-                return binaryString2DataURI(this.value, getMimeTypeFromFileName(this.name))
-              },
-            });
-          }))
+            return project;
+          });
         }
       },
     }
@@ -321,7 +327,7 @@
       obj = migrate(key, obj, model.migrations);
       
       //前処理
-      (model.beforeReturn??(()=>{}))(obj);
+      obj = (model.beforeReturn??(v=>v))(obj);
 
       return obj;
     }
@@ -443,6 +449,7 @@
         this.config = Store.get("config");
         this.ctx = Store.get("ctx");
         this.projects = Store.get("projects");
+        console.log({projects:this.projects})
         this.menu_opened = false;
         this.files_opened = false;
 
@@ -795,6 +802,7 @@
       fileTabs(){
         const pro = this.getCurrentProject();
         const projectUtil = ProjectUtil(pro);
+        console.log(projectUtil)
         return html`
         <div class="row file_tabs scroll_overlay">
           <button
