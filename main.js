@@ -1,9 +1,11 @@
 
 import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
 import make from "./libs/make.js";
-import {Store, createFile, createFolder, newProject} from "./libs/Store.js";
+import Store from "./libs/Store.js";
 import "./elements/MonacoEditor.js";
 import generateDemoPage from './libs/generateDemoPage.js';
+import { newFile, newFolder } from './Models/File.js';
+import { newProject } from './Models/Project.js';
 
 
 
@@ -814,7 +816,7 @@ customElements.define("tree-file", class extends BaseElement {
                 this.dispatchEvent(new CustomEvent("create", {
                   detail:{
                     files:this.data.files,
-                    value:createFile({name}),
+                    value:newFile({name}),
                   },
                   bubbles:true,
                   composed: true,
@@ -828,7 +830,7 @@ customElements.define("tree-file", class extends BaseElement {
                 this.dispatchEvent(new CustomEvent("create", {
                   detail:{
                     files:this.data.files,
-                    value:createFolder({name}),
+                    value:newFolder({name}),
                   },
                   bubbles:true,
                   composed: true,
