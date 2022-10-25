@@ -1,77 +1,12 @@
-import {proto as Project, newProject} from "../Models/Project.js";
 import { createId, setProto } from "./ModelUtil.js";
-
-//ほぼほぼ重複しないIDを生成
-const initialProjectId = createId();
+import Projects from "../Migrations/Projects.js"
+import Context from "../Migrations/Context.js"
+import Config from "../Migrations/Config.js"
 
 const Models = {
-  "config": {
-    migrations: [
-      {
-        v: 0,
-        up: () => {
-          return {
-            layout: 1,
-            refresh_wait: 1000,
-            auto_refresh: false,
-          };
-        }
-      },
-    ],
-  },
-  "ctx": {
-    migrations: [
-      {
-        v: 0,
-        up: () => {
-          return {
-            value: "",
-          }
-        }
-      },
-      {
-        v: 1,
-        up: () => {
-          return {
-            project: initialProjectId,
-          }
-        }
-      },
-    ],
-  },
-  "projects": {
-    migrations: [
-      {
-        v: 0,
-        up: () => {
-          return [
-            newProject("新規プロジェクト"),
-          ];
-        }
-      },
-    ],
-    receiver: (name, value) => {
-      if (typeof value !== 'object') return value;
-      console.log({ value })
-      if (typeof value?.entryFile === "string") {
-        return setProto(value, Project);
-      }
-      if (value.type === "file") {
-        return setProto(value, {
-          get stringValue() {
-            return binaryString2String(this.value);
-          },
-          set stringValue(val) {
-            this.value = string2BinaryString(val);
-          },
-          get dataURI() {
-            return binaryString2DataURI(this.value, getMimeTypeFromFileName(this.name))
-          },
-        });
-      }
-      return value;
-    }
-  },
+  "config": Config,
+  "ctx": Context,
+  "projects": Projects,
 }
 
 const store = {

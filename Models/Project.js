@@ -1,7 +1,6 @@
 import { setProto, createId } from "../libs/ModelUtil.js";
 import { newFile } from "./File.js";
 
-
 const searchFiles = (files, callback, { type = "file", multiple = false, path = "" } = {}) => {
   const value = [];
   const walk = (files, path) => {
@@ -70,7 +69,10 @@ const newProject = (name) => {
   }, proto);
 };
 
+const initialProjectId = createId();
+
 export {
   proto,
   newProject,
+  initialProjectId,
 }
