@@ -16,7 +16,6 @@ export default (name, props={}) => {
   }
   Object.assign(elem, attrs);
   listeners.forEach(([eventName, evListeners])=>{
-    console.log({eventName, evListeners})
     evListeners.forEach(listener=>elem.addEventListener(eventName, listener));
   });
   return elem;

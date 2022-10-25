@@ -18,10 +18,8 @@ const receiver = (name, value) => {
     }),
   ];
   for (const p of patterns) {
-    console.log({value})
     const obj = p(name, value);
     if (obj.cond){
-      console.log(obj.convert+"")
       return obj.convert();
     }
   }

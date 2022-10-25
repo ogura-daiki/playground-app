@@ -33,8 +33,6 @@ const migrate = (key, obj, migrations) => {
   //実施すべきmigrationが無い場合は最新の状態になっているのでそのまま返す。
   if (migrationList.length === 0) return obj;
 
-  console.log({ migrationList: migrationList.map(m => m.up + "") })
-
   //migrationを実施
   const migrated = migrationList.reduce((obj, m) => m.up(obj), obj);
 
@@ -52,7 +50,6 @@ const getValue = key => {
   let obj = store.get("store-" + key);
   obj = migrate(key, obj, model.migrations);
   store.set("store-" + key, obj);
-  console.log({ key, obj }, store.get("store-" + key, model.receiver))
   return store.get("store-" + key, model.receiver);
 }
 

@@ -113,7 +113,6 @@ class PlayGroundApp extends BaseElement {
     this.config = Store.get("config");
     this.ctx = Store.get("ctx");
     this.projects = Store.get("projects");
-    console.log({projects:this.projects})
     this.menu_opened = false;
     this.files_opened = false;
 
@@ -464,7 +463,6 @@ class PlayGroundApp extends BaseElement {
   }
   fileTabs(){
     const pro = this.getCurrentProject();
-    console.log(pro)
     return html`
     <div class="row file_tabs scroll_overlay">
       <button
@@ -495,7 +493,6 @@ class PlayGroundApp extends BaseElement {
       return pro;
     }
     pro = this.projects[0];
-    console.log({pro, ctx:this.ctx})
     this.ctx.project = pro.id;
     return pro;
   }
