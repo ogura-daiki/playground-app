@@ -69,6 +69,7 @@ class MonacoEditor extends HTMLElement{
     });
   }
   set file(val){
+    if(this.#file === val) return;
     this.#file = val;
     this.update();
   }
