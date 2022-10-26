@@ -1,6 +1,5 @@
 import { html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
 import BaseElement from './BaseElement.js';
-import { newFile, newFolder } from '../Models/File.js';
 
 class FileTree extends BaseElement {
   static get styles(){
@@ -230,8 +229,9 @@ class FileTree extends BaseElement {
               if(name){
                 this.dispatchEvent(new CustomEvent("create", {
                   detail:{
+                    type:"file",
+                    name,
                     files:this.data.files,
-                    value:newFile({name}),
                   },
                   bubbles:true,
                   composed: true,
@@ -244,8 +244,9 @@ class FileTree extends BaseElement {
               if(name){
                 this.dispatchEvent(new CustomEvent("create", {
                   detail:{
+                    name,
+                    type:"folder",
                     files:this.data.files,
-                    value:newFolder({name}),
                   },
                   bubbles:true,
                   composed: true,

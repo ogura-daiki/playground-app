@@ -8,6 +8,7 @@ import { newProject } from './Models/Project.js';
 import BaseElement from './elements/BaseElement.js';
 import iconFonts from './libs/iconFonts.js';
 import "./elements/FileTree.js";
+import { newFile, newFolder } from './Models/File.js';
 
 
 const when = (cond, val, elseVal=()=>"") => cond?val():elseVal();
@@ -288,13 +289,13 @@ class PlayGroundApp extends BaseElement {
     const onSelect = (file)=>{
       this.openTab(project, file.id);
     }
-    const onCreate = ({files, value:newFile})=>{
+    const onCreate = ({files, name, type})=>{
       if(files.some(f=>f.name === newFile.name)){
         alert(`${getFileTypeName(newFile)}名：${newFile.name}はフォルダ内に既に存在します。`);
         return;
       }
       this.updateProjects(()=>{
-        files.push(newFile);
+        files.push({ file:newFile, folder:newFolder }[type]({name}));
       });
       this.requestUpdate();
     }
