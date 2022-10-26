@@ -51,9 +51,14 @@ class MonacoEditor extends HTMLElement{
     <div id=editor></div>
     `
   }
+  #updateContent(value){
+    this.stopUpdate = true;
+    this.#editor.getModel().setValue(value);
+    this.stopUpdate = false;
+  }
   update() {
     if(this.#editor){
-      this.#editor.getModel().setValue(this.#file.stringValue);
+      this.#updateContent(this.#file.stringValue);
       monaco.editor.setModelLanguage(this.#editor.getModel(), getLanguageFromFileName(this.#file.name));
       monaco.editor.setTheme(this.theme);
       return;
@@ -65,6 +70,8 @@ class MonacoEditor extends HTMLElement{
       automaticLayout: true,
     });
     this.#editor.getModel().onDidChangeContent((event) => {
+      console.log(event)
+      if(this.stopUpdate) return;
       this.dispatchEvent(new CustomEvent("updateValue", {detail:{file:this.#file, newVal:this.#editor.getValue()}}));
     });
   }
