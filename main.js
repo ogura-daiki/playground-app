@@ -3,13 +3,13 @@ import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element
 import make from "./libs/make.js";
 import Store from "./libs/Store.js";
 import "./elements/MonacoEditor.js";
-import generateDemoPage from './libs/generateDemoPage.js';
 import { newProject } from './Models/Project.js';
 import BaseElement from './elements/BaseElement.js';
 import iconFonts from './libs/iconFonts.js';
 import "./elements/FileTree.js";
 import { newFile, newFolder } from './Models/File.js';
 import "./elements/Split.js";
+import "./elements/DemoView.js";
 
 
 const when = (cond, val, elseVal=()=>"") => cond?val():elseVal();
@@ -538,41 +538,3 @@ class PlayGroundApp extends BaseElement {
 }
 customElements.define("playground-app", PlayGroundApp);
 document.body.append(new PlayGroundApp());
-
-
-class DemoView extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
-    this.shadowRoot.innerHTML = `
-    <style>${this.constructor.style}</style>
-    <iframe id="iframe" sandbox="allow-scripts allow-modals allow-downloads allow-popups">
-    `;
-  }
-  set project(project) {
-    generateDemoPage(project).then(e=>this.shadowRoot.querySelector("#iframe").srcdoc = e);
-  }
-  sendMessage(msg) {
-    this.shadowRoot.querySelector("#iframe").contentWindow.postMessage(msg, "*");
-  }
-  static get style() {
-    return `
-      :host{
-        display:block;
-      }
-      html,body{
-        width:100%;
-        height:100%;
-      }
-      iframe{
-        display:block;
-        outline:none;
-        border:none;
-        width:100%;
-        height:100%;
-      }
-    `;
-  }
-}
-customElements.define("demo-view", DemoView);
-
