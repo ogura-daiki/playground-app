@@ -246,10 +246,11 @@ class PlayGroundApp extends BaseElement {
         .filelist_open_button{
           position:sticky;
           left:0px;
-          aspect-ratio:1;
           padding:0px;
           user-select:none;
           width:3em;
+          height:3em;
+          flex-shrink:0;
           outline:none;
           border:none;
           background:darkslateblue;
