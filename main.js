@@ -243,7 +243,7 @@ class PlayGroundApp extends BaseElement {
         .files_area .files{
           overflow-y:scroll;
         }
-        tree-file.root{
+        file-tree.root{
         }
       `
     ];
@@ -358,7 +358,7 @@ class PlayGroundApp extends BaseElement {
       <div class="col fill files_area">
         <div class="title">ファイル一覧</div>
         <div class="col scroll_overlay files grow">
-          <tree-file
+          <file-tree
             class="root"
             .open=${true}
             .data=${{ name: project.name, type: "folder", files:project.files }}
@@ -368,7 +368,7 @@ class PlayGroundApp extends BaseElement {
             @create=${({detail})=>onCreate(detail)}
             @delete=${({detail})=>onDelete(detail)}
             @move=${({detail})=>onMove(detail)}
-          ></tree-file>
+          ></file-tree>
         </div>
       </div>
     `

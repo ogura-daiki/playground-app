@@ -261,7 +261,7 @@ class FileTree extends BaseElement {
     <div style="display:${this.open ? "contents" : "none"}">
       ${this.data.files.map(e =>
         html`
-        <tree-file
+        <file-tree
           @deleted=${e=>this.requestUpdate()}
           @dragend=${e=>{
             this.requestUpdate();
@@ -269,7 +269,7 @@ class FileTree extends BaseElement {
           .parent=${this.data}
           .data=${e}
           .nest=${this.nest + 1}
-        ></tree-file>`
+        ></file-tree>`
       )}
     </div>
     `: ""}
@@ -277,4 +277,4 @@ class FileTree extends BaseElement {
   }
 }
 
-customElements.define("tree-file", FileTree);
+customElements.define("file-tree", FileTree);
