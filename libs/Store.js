@@ -1,13 +1,4 @@
-import { createId, setProto } from "./ModelUtil.js";
-import Projects from "../Migrations/Projects.js"
-import Context from "../Migrations/Context.js"
-import Config from "../Migrations/Config.js"
-
-const Models = {
-  "config": Config,
-  "ctx": Context,
-  "projects": Projects,
-}
+import Models from "../Migrations/index.js";
 
 const store = {
   get(key, receiver = ((n, v) => v)) {
