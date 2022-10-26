@@ -8,6 +8,7 @@ import { newFile, newFolder } from './Models/File.js';
 import { newProject } from './Models/Project.js';
 
 
+const when = (cond, val, elseVal=()=>"") => cond?val():elseVal();
 
 const iconFonts = css`
 /**
@@ -470,7 +471,7 @@ class PlayGroundApp extends BaseElement {
         @click=${e => { this.files_opened = !this.files_opened }}
       ><i>file_copy</i></button>
       ${pro.tabs.map((id) => html`
-        <div class="row file_tab ${pro.opened === id ? "open" : ""}"
+        <div class="row file_tab ${when(id===pro.opened,()=>"open")}"
           @click=${e=>this.selectTab(pro, id)}
         >
           <span>${pro.findFileById(id).name}</span>
@@ -500,7 +501,7 @@ class PlayGroundApp extends BaseElement {
   #topBar(project){
     return html`
     <div class="top_bar row" style="background:darkblue;">
-      <button class="top_menu ${this.menu_opened ? "open" : ""}" @click=${e => this.menu_opened = !this.menu_opened}>
+      <button class="top_menu ${when(this.menu_opened,()=>"open")}" @click=${e => this.menu_opened = !this.menu_opened}>
         <div class="menu_icon centering"></div>
       </button>
       <input type="text" .value=${project.name} @input=${e => this.updateProjects(() => {
@@ -547,12 +548,12 @@ class PlayGroundApp extends BaseElement {
             <div slot=0 class="fill col">
               ${this.fileTabs()}
               <div class="grow code_area">
-                ${(
-                  this.getCurrentProject().opened!=null
-                    ?()=>this.#editor(project)
-                    :()=>this.#fileNotSelected()
-                )()}
-                ${(this.files_opened ? () => this.fileList() : () => "")()}
+                ${when(
+                  project.opened!=null,
+                  ()=>this.#editor(project),
+                  ()=>this.#fileNotSelected()
+                )}
+                ${when(this.files_opened, ()=>this.fileList())}
               </div>
               <div>
                 <label>自動反映<input type="checkbox" .checked=${this.config.auto_refresh} @input=${e => {
@@ -569,7 +570,7 @@ class PlayGroundApp extends BaseElement {
               <demo-view id="demo-view" class="fill"></demo-view>
             </div>
           </split-panel>
-          ${(this.menu_opened ? () => this.projectList() : () => "")()}
+          ${when(this.menu_opened, ()=>this.projectList())}
         </div>
       </div>
     `;
