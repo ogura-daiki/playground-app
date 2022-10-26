@@ -497,45 +497,60 @@ class PlayGroundApp extends BaseElement {
     return pro;
   }
 
+  #topBar(project){
+    return html`
+    <div class="top_bar row" style="background:darkblue;">
+      <button class="top_menu ${this.menu_opened ? "open" : ""}" @click=${e => this.menu_opened = !this.menu_opened}>
+        <div class="menu_icon centering"></div>
+      </button>
+      <input type="text" .value=${project.name} @input=${e => this.updateProjects(() => {
+        project.name = e.target.value;
+      })}>
+    </div>
+    `;
+  }
+
+  #editor(project){
+    return html`
+    <monaco-editor .file=${project.getOpenedFile()} id="input" class="fill" @updateValue=${e => {
+      const {file, newVal} = e.detail;
+      this.updateProjects(() => {
+        file.stringValue = newVal;
+      });
+      this.updater.push(this.config.refresh_wait, {
+        auto_refresh: this.config.auto_refresh
+      });
+    }}></monaco-editor>
+    `;
+  }
+
+  #fileNotSelected(){
+    return html`
+    <div class="fill centering">
+    <div class="centering no_opened_file">
+      <i style="font-size:8em;line-height:1em;">file_copy</i>
+      <span>ファイルが開かれていません</span>
+      <button
+        @click=${e=>{this.files_opened=true;}}
+      >ファイルリストを開く</button>
+    </div>
+    `;
+  }
+
   render() {
-    const projectUtil = this.getCurrentProject();
+    const project = this.getCurrentProject();
     return html`
       <div class="col fill">
-        <div class="top_bar row" style="background:darkblue;">
-          <button class="top_menu ${this.menu_opened ? "open" : ""}" @click=${e => this.menu_opened = !this.menu_opened}>
-            <div class="menu_icon centering"></div>
-          </button>
-          <input type="text" .value=${this.getCurrentProject().name} @input=${e => this.updateProjects(() => {
-            this.getCurrentProject().name = e.target.value;
-          })}>
-        </div>
+        ${this.#topBar(project)}
         <div class="grow" style="position:relative;">
           <split-panel id="container" class="fill" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
             <div slot=0 class="fill col">
               ${this.fileTabs()}
               <div class="grow code_area">
-                ${(this.getCurrentProject().opened!=null
-                  ?()=>html`
-                    <monaco-editor .file=${projectUtil.getOpenedFile()} id="input" class="fill" @updateValue=${e => {
-                      const {file, newVal} = e.detail;
-                      this.updateProjects(ps => {
-                        file.stringValue = newVal;
-                      });
-                      this.updater.push(this.config.refresh_wait, {
-                        auto_refresh: this.config.auto_refresh
-                      });
-                    }}></monaco-editor>
-                  `
-                  :()=>html`
-                  <div class="fill centering">
-                    <div class="centering no_opened_file">
-                      <i style="font-size:8em;line-height:1em;">file_copy</i>
-                      <span>ファイルが開かれていません</span>
-                      <button
-                        @click=${e=>{this.files_opened=true;}}
-                      >ファイルリストを開く</button>
-                  </div>
-                  `
+                ${(
+                  this.getCurrentProject().opened!=null
+                    ?()=>this.#editor(project)
+                    :()=>this.#fileNotSelected()
                 )()}
                 ${(this.files_opened ? () => this.fileList() : () => "")()}
               </div>
