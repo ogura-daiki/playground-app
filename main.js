@@ -10,7 +10,7 @@ import "./elements/FileTree.js";
 import { newFile, newFolder } from './Models/File.js';
 import "./elements/Split.js";
 import "./elements/DemoView.js";
-
+import "./elements/MenuIcon.js";
 
 const when = (cond, val, elseVal=()=>"") => cond?val():elseVal();
 
@@ -83,32 +83,13 @@ class PlayGroundApp extends BaseElement {
           border-right:1px solid lightgray;
         }
         .menu_icon{
-          position:relative;
           aspect-ratio:1;
-          width:100%;
-          --stroke-color:white;
-          --stroke-width:3px;
-          transition:transform .3s;
+          width:2.5rem;
+          height:2.5rem;
+          color:white;
         }
-        .menu_icon:before, .menu_icon:after{
-          content:"";
-          display:block;
-          width:100%;
-        }
-        .menu_icon:before{
-          border:solid var(--stroke-color);
-          border-width:var(--stroke-width) 0px;
-          box-sizing:border-box;
-          height:75%;
-          transition:height .3s, background .3s, transform .3s, border .3s;
-        }
-        .menu_icon:after{
-          height:var(--stroke-width);
-          background:var(--stroke-color);
-          position:absolute;
-          top:calc(50% - var(--stroke-width) / 2 );
-          left:0%;
-          transition:transform .3s;
+        .menu_icon i{
+          margin-top:0px;
         }
 
         .open .menu_icon{
@@ -444,9 +425,12 @@ class PlayGroundApp extends BaseElement {
   #topBar(project){
     return html`
     <div class="top_bar row" style="background:darkblue;">
-      <button class="top_menu ${when(this.menu_opened,()=>"open")}" @click=${e => this.menu_opened = !this.menu_opened}>
-        <div class="menu_icon centering"></div>
-      </button>
+      <menu-icon class="menu_icon" ?open=${this.menu_opened} @click=${e=>{
+        this.menu_opened = !this.menu_opened;
+      }}>
+        <i slot=open>menu</i>
+        <i slot=close>close</i>
+      </menu-icon>
       <input type="text" .value=${project.name} @input=${e => this.updateProjects(() => {
         project.name = e.target.value;
       })}>
