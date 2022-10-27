@@ -9,7 +9,7 @@ const searchFiles = (files, callback, { type = "file", multiple = false, path = 
         const result = callback(file);
         if (result) {
           value.push({ file, path: path + file.name });
-          return multiple;
+          return !multiple;
         }
       }
       if (file.type == "folder") {
@@ -18,6 +18,7 @@ const searchFiles = (files, callback, { type = "file", multiple = false, path = 
     })
   }
   walk(files, path);
+  console.log({multiple, value})
   if (multiple) {
     return value;
   }
@@ -50,6 +51,7 @@ const proto = {
     return this.findFileById(this.opened);
   },
   findFilesByLanguage(language) {
+    console.log(language)
     return searchFiles(this.files, f => getLanguageFromFileName(f.name) === language, { multiple: true });
   },
   procToFiles(callback) {
