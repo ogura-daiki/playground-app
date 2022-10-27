@@ -1,6 +1,6 @@
 
-import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
 import make from "./libs/make.js";
+import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
 import Store from "./libs/Store.js";
 import "./elements/MonacoEditor.js";
 import { newProject } from './Models/Project.js';
@@ -11,6 +11,7 @@ import { newFile, newFolder } from './Models/File.js';
 import "./elements/Split.js";
 import "./elements/DemoView.js";
 import "./elements/MenuIcon.js";
+
 
 const when = (cond, val, elseVal=()=>"") => cond?val():elseVal();
 
@@ -525,4 +526,5 @@ class PlayGroundApp extends BaseElement {
   }
 }
 customElements.define("playground-app", PlayGroundApp);
+document.querySelector("#loading").remove();
 document.body.append(new PlayGroundApp());
