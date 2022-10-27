@@ -160,9 +160,13 @@ class PlayGroundApp extends BaseElement {
         }
 
         .file_tabs{
-          padding-right:8px;
           overflow-x:overlay;
           background:darkslateblue;
+        }
+
+        .file_tabs .tab_list{
+          padding-right:8px;
+          overflow-x:overlay;
         }
 
         .scroll_overlay::-webkit-scrollbar {
@@ -182,8 +186,6 @@ class PlayGroundApp extends BaseElement {
           box-shadow:0 0 0 1px rgba(255, 255, 255, .3);
         }
         .filelist_open_button{
-          position:sticky;
-          left:0px;
           padding:0px;
           user-select:none;
           width:3em;
@@ -404,11 +406,12 @@ class PlayGroundApp extends BaseElement {
   fileTabs(){
     const pro = this.getCurrentProject();
     return html`
-    <div class="row file_tabs scroll_overlay">
+    <div class="row file_tabs">
       <button
         class="centering filelist_open_button"
         @click=${e => { this.files_opened = !this.files_opened }}
       ><i>file_copy</i></button>
+      <div class="tab_list row scroll_overlay">
       ${pro.tabs.map((id) => html`
         <div class="row file_tab ${when(id===pro.opened,()=>"open")}"
           @click=${e=>this.selectTab(pro, id)}
@@ -423,6 +426,7 @@ class PlayGroundApp extends BaseElement {
           >close</i>
         </div>
       `)}
+      </div>
     </div>
     `;
   }
