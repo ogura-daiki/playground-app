@@ -77,8 +77,8 @@ class PlayGroundApp extends BaseElement {
 
         .top_menu{
           display:block;
-          padding:4px 12px;
-          width:52px;
+          padding:8px 8px;
+          width:3em;
           background:transparent;
           border-right:1px solid lightgray;
         }
@@ -99,7 +99,7 @@ class PlayGroundApp extends BaseElement {
           border:solid var(--stroke-color);
           border-width:var(--stroke-width) 0px;
           box-sizing:border-box;
-          height:60%;
+          height:75%;
           transition:height .3s, background .3s, transform .3s, border .3s;
         }
         .menu_icon:after{
