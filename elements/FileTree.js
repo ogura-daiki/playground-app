@@ -38,20 +38,21 @@ class FileTree extends BaseElement {
           min-width:0rem;
         }
         .icon{
-          min-width:1em;
-          width:1em;
+          min-width:1rem;
+          width:1rem;
         }
         .folder_arrow{
           font-family:monospace;
           font-weight:bold;
           transition:transform .1s;
+          font-size:.8rem;
         }
         .menu_button{
           border:0px;
           margin:0px;
           padding:0px;
           background:transparent;
-          border-radius:.2em;
+          border-radius:.2rem;
           color:white;
           width:1.5rem;
         }
@@ -119,18 +120,18 @@ class FileTree extends BaseElement {
     const lang = getLanguageFromFileName(this.data.name);
     return lang
     ?{
-      html:html`<span style="font-size:0.5em;color:salmon">&lt;&gt;</span>`,
-      css:html`<span style="font-size:0.8em;color:skyblue">#</span>`,
-      javascript:html`<span style="font-size:0.5em;color:yellow">JS</span>`,
+      html:html`<span style="font-size:0.5rem;color:salmon">&lt;&gt;</span>`,
+      css:html`<span style="font-size:0.8rem;color:skyblue">#</span>`,
+      javascript:html`<span style="font-size:0.5rem;color:yellow">JS</span>`,
     }[lang]
-    :html`<span style="font-size:0.5em;color:lightpink">?</span>`;
+    :html`<span style="font-size:0.5rem;color:lightpink">?</span>`;
   }
   padLeft(){
     if(!this.nest) return "";
     return html`
     <div class="row" style="gap:4px;align-self:stretch">
       ${[...Array(this.nest)].map(() => html`
-        <div style="width:.5em;box-sizing:border-box;border-right:solid white 1px"></div>
+        <div style="width:.5rem;box-sizing:border-box;border-right:solid white 1px"></div>
       `)}
     </div>
     `

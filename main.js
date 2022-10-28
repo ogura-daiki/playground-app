@@ -79,7 +79,7 @@ class PlayGroundApp extends BaseElement {
         .top_menu{
           display:block;
           padding:8px 8px;
-          width:3em;
+          width:3rem;
           background:transparent;
           border-right:1px solid lightgray;
         }
@@ -113,7 +113,7 @@ class PlayGroundApp extends BaseElement {
           color:white;
         }
         .code_area .no_opened_file{
-          font-size:.5em;
+          font-size:.5rem;
           user-select:none;
           aspect-ratio:1;
           background:rgba(255,255,255,.5);
@@ -134,7 +134,7 @@ class PlayGroundApp extends BaseElement {
           top:0px;
           background:white;
           padding:4px;
-          font-size:1.5em;
+          font-size:1.5rem;
         }
         .projects_area .projects{
           gap:8px;
@@ -170,8 +170,8 @@ class PlayGroundApp extends BaseElement {
         .filelist_open_button{
           padding:0px;
           user-select:none;
-          width:3em;
-          height:3em;
+          width:2.5rem;
+          height:2.5rem;
           flex-shrink:0;
           outline:none;
           border:none;
@@ -182,7 +182,7 @@ class PlayGroundApp extends BaseElement {
           background:rgb(100,100,140);
         }
         .filelist_open_button i{
-          font-size:2em;
+          font-size:1.5rem;
           color:white;
         }
         .file_tab{
@@ -197,12 +197,12 @@ class PlayGroundApp extends BaseElement {
           background:rgba(255,255,200,.2);
         }
         .file_tab .close_button{
-          width:1.5em;
+          width:1.5rem;
           aspect-ratio:1;
-          border-radius:.2em;
+          border-radius:.2rem;
           user-select:none;
           margin:4px;
-          font-size:1em;
+          font-size:1rem;
         }
         .file_tab .close_button:where(:hover, :open){
           background:rgba(255,255,200,.2)
@@ -222,7 +222,7 @@ class PlayGroundApp extends BaseElement {
           color:white;
         }
         .files_area .title{
-          font-size:1.5em;
+          font-size:1.5rem;
           background: rgba( 47, 47, 47, 0.85 );
           padding:4px 12px;
         }
@@ -457,7 +457,7 @@ class PlayGroundApp extends BaseElement {
     return html`
     <div class="fill centering">
     <div class="centering no_opened_file">
-      <i style="font-size:8em;line-height:1em;">file_copy</i>
+      <i style="font-size:8rem;line-height:1rem;">file_copy</i>
       <span>ファイルが開かれていません</span>
       <button
         @click=${e=>{this.files_opened=true;}}

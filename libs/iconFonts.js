@@ -30,7 +30,7 @@ i {
   'opsz' 48;
   /*font-size:1.5em;*/
   user-select:none;
-  margin-top: -0.05em;
+  /*margin-top: -0.05em;*/
 }
 `;
 document.head.append(make("style", {textContent:iconFonts}));
