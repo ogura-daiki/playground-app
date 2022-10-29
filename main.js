@@ -3,7 +3,7 @@ import make from "./libs/make.js";
 import { LitElement, html, css, when } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
 import Store from "./libs/Store.js";
 import "./elements/MonacoEditor.js";
-import { newProject } from './Models/Project.js';
+import { newProject, copyProject } from './Models/Project.js';
 import BaseElement from './elements/BaseElement.js';
 import iconFonts from './libs/iconFonts.js';
 import "./elements/FileTree.js";
@@ -261,6 +261,42 @@ class PlayGroundApp extends BaseElement {
 
   #projectListItem(project, idx){
     const {id, name} = project;
+    const onDelete = e=>{
+      e.stopPropagation();
+      if(this.ctx.project===id){
+        alert("選択中のプロジェクトは削除できません");
+        return;
+      }
+      if(!confirm(`プロジェクト：${name}を削除してもよろしいですか？`)){
+        return;
+      }
+      this.updateProjects(projects=>{
+        projects.splice(idx,1);
+      });
+      this.requestUpdate();
+    };
+    const onCopy = e=>{
+      e.stopPropagation();
+      const noSuffixName = name.replace(/- \d+$/,"");
+      this.updateProjects(projects=>{
+        const maxSuffix = projects.reduce((c,p)=>{
+          if(p.name.startsWith(noSuffixName)){
+            const suffix = p.name.slice(noSuffixName.length);
+            if(/-\d+/.test(suffix)){
+              c.push(+/-(\d+)/.exec(suffix)[1]);
+            }
+          }
+          return c;
+        },[0]).sort().pop();
+        const newName = `${noSuffixName} -${maxSuffix+1}`;
+        const copiedProject = copyProject(newName, project);
+        projects.push(copiedProject);
+      });
+      this.requestUpdate();
+    }
+    const menuButton = (icon, click) => html`
+    <i class="centering menu" style="width:1.5rem;height:1.5rem;font-size:1rem;" @click=${click}>${icon}</i>
+    `;
     return html`
       <div
         class="project row ${when(this.ctx.project===id, ()=>"selected")}"
@@ -277,20 +313,10 @@ class PlayGroundApp extends BaseElement {
       >
         <span class=grow>${name}</span>
         ${when(this.ctx.project===id, ()=>html`<div class=badge>選択中</div>`)}
-        <i class=centering style="padding:0px 4px" @click=${e=>{
-          e.stopPropagation();
-          if(this.ctx.project===id){
-            alert("選択中のプロジェクトは削除できません");
-            return;
-          }
-          if(!confirm(`プロジェクト：${name}を削除してもよろしいですか？`)){
-            return;
-          }
-          this.updateProjects(projects=>{
-            projects.splice(idx,1);
-          });
-          this.requestUpdate();
-        }}>delete</i>
+        <div class="row" style="gap:4px;padding-left:8px;align-items:center;">
+          ${menuButton("content_copy", onCopy)}
+          ${menuButton("delete", onDelete)}
+        </div>
       </div>
     `;
   }

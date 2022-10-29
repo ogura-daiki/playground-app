@@ -1,5 +1,5 @@
 import { setProto, createId } from "../libs/ModelUtil.js";
-import { newFile } from "./File.js";
+import { proto as FileProto, newFile } from "./File.js";
 
 const searchFiles = (files, callback, { type = "file", multiple = false, path = "" } = {}) => {
   const value = [];
@@ -59,6 +59,30 @@ const proto = {
   }
 };
 
+const receiver = (name, value) => {
+  const patterns = [
+    (name, value) => ({
+      cond: typeof value !== "object",
+      convert: () => value
+    }),
+    (name, value) => ({
+      cond: typeof value?.entryFile === "string",
+      convert: () => setProto(value, ProjectProto),
+    }),
+    (name, value) => ({
+      cond: value.type === "file",
+      convert: () => setProto(value, FileProto),
+    }),
+  ];
+  for (const p of patterns) {
+    const obj = p(name, value);
+    if (obj.cond){
+      return obj.convert();
+    }
+  }
+  return value;
+}
+
 const newProject = (name) => {
   const index = newFile({ name: "index.html" });
   return setProto({
@@ -71,10 +95,25 @@ const newProject = (name) => {
   }, proto);
 };
 
+const copyProject = (name, baseProject) => {
+  const copied = JSON.parse(JSON.stringify(baseProject), (name, value) => {
+    if(value?.type === "file"){
+      return setProto(value, FileProto);
+    }
+    return value;
+  });
+  Object.assign(copied, {
+    id:createId(),
+    name,
+  });
+  return setProto(copied, proto);
+};
+
 const initialProjectId = createId();
 
 export {
   proto,
   newProject,
+  copyProject,
   initialProjectId,
 }
