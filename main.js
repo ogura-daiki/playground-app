@@ -38,6 +38,7 @@ class PlayGroundApp extends BaseElement {
       projects: { type: Array },
       menu_opened: { type: Boolean },
       files_opened: { type: Boolean },
+      searchText: { type: String },
     };
   }
   constructor() {
@@ -52,7 +53,7 @@ class PlayGroundApp extends BaseElement {
     this.projects = Store.get("projects");
     this.menu_opened = false;
     this.files_opened = false;
-
+    this.searchText = "";
   }
   static get styles() {
     return [
@@ -132,7 +133,7 @@ class PlayGroundApp extends BaseElement {
           font-size:1.5rem;
           box-shadow:0px 2px 4px 0px rgba(0,0,0,.2);
         }
-        .projects_area .title>span{
+        .projects_area .title span{
           padding:0px 16px;
         }
         .projects_area .title .append{
@@ -254,7 +255,50 @@ class PlayGroundApp extends BaseElement {
     ];
   }
 
+  #searchProjects(){
+    return this.projects.reduce((c,p,i)=>{if(!this.searchText || p.name.match(this.searchText)){c.push([p,i])}return c;},[]);
+  }
+
+  #projectListItem(project, idx){
+    const {id, name} = project;
+    return html`
+      <div
+        class="project row ${when(this.ctx.project===id, ()=>"selected")}"
+        @click=${e=>{
+          if(this.ctx.project === id){
+            return;
+          }
+          this.updateCtx(ctx=>{
+            ctx.project = id;
+          });
+          //this.menu_opened = false;
+          this.requestUpdate();
+        }}
+      >
+        <span class=grow>${name}</span>
+        ${when(this.ctx.project===id, ()=>html`<div class=badge>選択中</div>`)}
+        <i class=centering style="padding:0px 4px" @click=${e=>{
+          e.stopPropagation();
+          if(this.ctx.project===id){
+            alert("選択中のプロジェクトは削除できません");
+            return;
+          }
+          if(!confirm(`プロジェクト：${name}を削除してもよろしいですか？`)){
+            return;
+          }
+          this.updateProjects(projects=>{
+            projects.splice(idx,1);
+          });
+          this.requestUpdate();
+        }}>delete</i>
+      </div>
+    `;
+  }
+
+
   projectList() {
+    const searchedProjects = this.#searchProjects();
+    console.log({searchedProjects});
     return html`
       <div class="fill col projects_area">
         <div class="title row">
@@ -266,39 +310,25 @@ class PlayGroundApp extends BaseElement {
             this.requestUpdate();
           }}>add</i>
         </div>
+        <div class="row" style="padding:8px;gap:8px;">
+          <span>検索</span>
+          <input type=text class=grow .value=${this.searchText??""} @input=${e=>{
+            this.searchText = e.target.value.trim();
+          }}>
+        </div>
         <div class="grow col projects scroll_overlay">
-          ${this.projects.flat().map(({ id, name }, idx) => html`
-            <div
-              class="project row ${when(this.ctx.project===id, ()=>"selected")}"
-              @click=${e=>{
-                if(this.ctx.project === id){
-                  return;
-                }
-                this.updateCtx(ctx=>{
-                  ctx.project = id;
-                });
-                //this.menu_opened = false;
-                this.requestUpdate();
-              }}
-            >
-              <span class=grow>${name}</span>
-              ${when(this.ctx.project===id, ()=>html`<div class=badge>選択中</div>`)}
-              <i class=centering style="padding:0px 4px" @click=${e=>{
-                e.stopPropagation();
-                if(this.ctx.project===id){
-                  alert("選択中のプロジェクトは削除できません");
-                  return;
-                }
-                if(!confirm(`プロジェクト：${name}を削除してもよろしいですか？`)){
-                  return;
-                }
-                this.updateProjects(projects=>{
-                  projects.splice(idx,1);
-                });
-                this.requestUpdate();
-              }}>delete</i>
-            </div>
-          `)}
+          ${when(
+            !!searchedProjects.length,
+            ()=>searchedProjects.map(sr=>this.#projectListItem(...sr)),
+            ()=>html`
+              <div class="fill centering">
+                <div class="centering">
+                  <i style="font-size:4rem">search</i>
+                  <span>"${this.searchText}"に該当するプロジェクトは存在しません。</span>
+                </div>
+              </div>
+            `
+          )}
         </div>
       </div>
     `
