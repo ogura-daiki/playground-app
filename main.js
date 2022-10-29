@@ -469,7 +469,7 @@ class PlayGroundApp extends BaseElement {
       <div class="col fill">
         ${this.#topBar(project)}
         <div class="grow" style="position:relative;">
-          <split-panel id="container" class="fill" count=2 weight_sum=2 weights="[1,1]" min_weights="[0.1,0.1]">
+          <split-panel id="container" class="fill" count=2 weight_sum=2 weights="[1,1]" min_weights="[0,0]">
             <div slot=0 class="fill col">
               ${this.fileTabs()}
               <div class="grow code_area">
