@@ -267,7 +267,7 @@ class PlayGroundApp extends BaseElement {
           }}>add</i>
         </div>
         <div class="grow col projects scroll_overlay">
-          ${this.projects.flat().map(({ id, name }) => html`
+          ${this.projects.flat().map(({ id, name }, idx) => html`
             <div
               class="project row ${when(this.ctx.project===id, ()=>"selected")}"
               @click=${e=>{
@@ -277,7 +277,7 @@ class PlayGroundApp extends BaseElement {
                 this.updateCtx(ctx=>{
                   ctx.project = id;
                 });
-                this.menu_opened = false;
+                //this.menu_opened = false;
                 this.requestUpdate();
               }}
             >
@@ -285,9 +285,17 @@ class PlayGroundApp extends BaseElement {
               ${when(this.ctx.project===id, ()=>html`<div class=badge>選択中</div>`)}
               <i class=centering style="padding:0px 4px" @click=${e=>{
                 e.stopPropagation();
-                if(confirm(`プロジェクト：${name}を削除してもよろしいですか？`)){
-                  alert("削除処理実装する")
+                if(this.ctx.project===id){
+                  alert("選択中のプロジェクトは削除できません");
+                  return;
                 }
+                if(!confirm(`プロジェクト：${name}を削除してもよろしいですか？`)){
+                  return;
+                }
+                this.updateProjects(projects=>{
+                  projects.splice(idx,1);
+                });
+                this.requestUpdate();
               }}>delete</i>
             </div>
           `)}
