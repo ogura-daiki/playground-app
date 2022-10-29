@@ -1,4 +1,4 @@
-import { css } from 'https://unpkg.com/lit-element/lit-element.js?module';
+import { css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
 import make from './make.js';
 
 const iconFonts = css`

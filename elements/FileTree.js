@@ -1,4 +1,4 @@
-import { html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
+import { html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
 import BaseElement from './BaseElement.js';
 
 class FileTree extends BaseElement {

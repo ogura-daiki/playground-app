@@ -1,4 +1,4 @@
-import { LitElement, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
+import { LitElement, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
 import iconFonts from '../libs/iconFonts.js';
 
 class BaseElement extends LitElement{

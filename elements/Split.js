@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'https://unpkg.com/lit-element/lit-element.js?module';
+import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
 
 class Split extends LitElement {
   static get properties() {
