@@ -1,6 +1,6 @@
 
 import make from "./libs/make.js";
-import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
+import { LitElement, html, css, when } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
 import Store from "./libs/Store.js";
 import "./elements/MonacoEditor.js";
 import { newProject } from './Models/Project.js';
@@ -11,9 +11,6 @@ import { newFile, newFolder } from './Models/File.js';
 import "./elements/Split.js";
 import "./elements/DemoView.js";
 import "./elements/MenuIcon.js";
-
-
-const when = (cond, val, elseVal=()=>"") => cond?val():elseVal();
 
 
 const debounce = func => {
