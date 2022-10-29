@@ -122,22 +122,45 @@ class PlayGroundApp extends BaseElement {
           position:absolute;
           top:0px;
           left:0px;
-          overflow-y:scroll;
           z-index:99999;
-          background:white;
+          background:darkslateblue;
+          color:white;
         }
         .projects_area .title{
-          position:sticky;
-          top:0px;
-          background:white;
+          background:inherit;
           padding:4px;
           font-size:1.5rem;
+          box-shadow:0px 2px 4px 0px rgba(0,0,0,.2);
+        }
+        .projects_area .title>span{
+          padding:0px 16px;
+        }
+        .projects_area .title .append{
+          font-size:inherit;
+          padding:0px 8px;
         }
         .projects_area .projects{
-          gap:8px;
+          padding:8px;
+          overflow-y:scroll;
+        }
+        .projects_area .project{
+          border-bottom: 1px solid white;
           padding:8px;
         }
-
+        .projects_area .project.selected{
+          background:rgba(255,255,255,.2);
+        }
+        .projects_area .project .badge{
+          background:white;
+          padding:4px 12px;
+          font-size:.5rem;
+          color:black;
+          display:grid;
+          place-items:center;
+          border-radius:999999vmax;
+          align-self:center;
+        }
+        
         .file_tabs{
           background:darkslateblue;
         }
@@ -230,19 +253,23 @@ class PlayGroundApp extends BaseElement {
       `
     ];
   }
+
   projectList() {
     return html`
       <div class="fill col projects_area">
-        <div class="title">プロジェクト一覧<button style="margin-left:auto;" @click=${e => {
-          this.updateProjects(ps => {
-            ps.push(newProject());
-          });
-          this.requestUpdate();
-        }}>+</button></div>
-        <div class="grow col projects">
-          ${this.projects.map(({ id, name }) => html`
+        <div class="title row">
+          <span class=grow>プロジェクト一覧</span>
+          <i class="append centering" @click=${e => {
+            this.updateProjects(ps => {
+              ps.push(newProject());
+            });
+            this.requestUpdate();
+          }}>add</i>
+        </div>
+        <div class="grow col projects scroll_overlay">
+          ${this.projects.flat().map(({ id, name }) => html`
             <div
-              style="padding:4px;background:${this.ctx.project===id?"yellow":"lightgray"};"
+              class="project row ${when(this.ctx.project===id, ()=>"selected")}"
               @click=${e=>{
                 if(this.ctx.project === id){
                   return;
@@ -253,7 +280,16 @@ class PlayGroundApp extends BaseElement {
                 this.menu_opened = false;
                 this.requestUpdate();
               }}
-            >${name}</div>
+            >
+              <span class=grow>${name}</span>
+              ${when(this.ctx.project===id, ()=>html`<div class=badge>選択中</div>`)}
+              <i class=centering style="padding:0px 4px" @click=${e=>{
+                e.stopPropagation();
+                if(confirm(`プロジェクト：${name}を削除してもよろしいですか？`)){
+                  alert("削除処理実装する")
+                }
+              }}>delete</i>
+            </div>
           `)}
         </div>
       </div>
