@@ -454,7 +454,7 @@ class PlayGroundApp extends BaseElement {
     return html`
     <div class="fill centering">
     <div class="centering no_opened_file">
-      <i style="font-size:8rem;line-height:1rem;">file_copy</i>
+      <i style="font-size:4rem;">file_copy</i>
       <span>ファイルが開かれていません</span>
       <button
         @click=${e=>{this.files_opened=true;}}
