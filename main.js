@@ -139,7 +139,6 @@ class PlayGroundApp extends BaseElement {
         }
 
         .file_tabs{
-          overflow-x:overlay;
           background:darkslateblue;
         }
 
