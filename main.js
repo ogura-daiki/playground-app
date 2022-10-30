@@ -1,11 +1,9 @@
 
-import make from "./libs/make.js";
-import { LitElement, html, css, when } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
+import { html, css, when } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
 import Store from "./libs/Store.js";
 import "./elements/MonacoEditor.js";
 import { newProject, copyProject } from './Models/Project.js';
 import BaseElement from './elements/BaseElement.js';
-import iconFonts from './libs/iconFonts.js';
 import "./elements/FileTree.js";
 import { newFile, newFolder } from './Models/File.js';
 import "./elements/Split.js";
