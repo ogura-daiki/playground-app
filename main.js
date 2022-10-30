@@ -9,7 +9,7 @@ import { newFile, newFolder } from './Models/File.js';
 import "./elements/Split.js";
 import "./elements/DemoView.js";
 import "./elements/MenuIcon.js";
-
+import { incrementFileNameSuffix } from './libs/incrementFileNameSuffix.js';
 
 const debounce = func => {
   let timer;
@@ -291,16 +291,8 @@ class PlayGroundApp extends BaseElement {
     };
     const onCopy = e=>{
       e.stopPropagation();
-      const noSuffixName = name.replace(/\s-\d+$/,"");
       this.updateProjects(projects=>{
-        const maxSuffix = projects.reduce((c,p)=>{
-          if(p.name.startsWith(noSuffixName)){
-            const suffix = p.name.slice(noSuffixName.length);
-            c.push(+/-(\d+)$/.exec(suffix)[1]);
-          }
-          return c;
-        },[0]).sort().pop();
-        const newName = `${noSuffixName} -${maxSuffix+1}`;
+        const newName = incrementFileNameSuffix(name, projects.map(p=>p.name));
         const copiedProject = copyProject(newName, project);
         projects.push(copiedProject);
       });
