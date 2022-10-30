@@ -291,14 +291,12 @@ class PlayGroundApp extends BaseElement {
     };
     const onCopy = e=>{
       e.stopPropagation();
-      const noSuffixName = name.replace(/- \d+$/,"");
+      const noSuffixName = name.replace(/\s-\d+$/,"");
       this.updateProjects(projects=>{
         const maxSuffix = projects.reduce((c,p)=>{
           if(p.name.startsWith(noSuffixName)){
             const suffix = p.name.slice(noSuffixName.length);
-            if(/-\d+/.test(suffix)){
-              c.push(+/-(\d+)/.exec(suffix)[1]);
-            }
+            c.push(+/-(\d+)$/.exec(suffix)[1]);
           }
           return c;
         },[0]).sort().pop();
