@@ -18,7 +18,6 @@ const searchFiles = (files, callback, { type = "file", multiple = false, path = 
     })
   }
   walk(files, path);
-  console.log({multiple, value})
   if (multiple) {
     return value;
   }
@@ -51,7 +50,6 @@ const proto = {
     return this.findFileById(this.opened);
   },
   findFilesByLanguage(language) {
-    console.log(language)
     return searchFiles(this.files, f => getLanguageFromFileName(f.name) === language, { multiple: true });
   },
   procToFiles(callback) {

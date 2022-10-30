@@ -328,7 +328,6 @@ class PlayGroundApp extends BaseElement {
 
   projectList() {
     const searchedProjects = this.#searchProjects();
-    console.log({searchedProjects});
     return html`
       <div class="fill col projects_area">
         <div class="title row">

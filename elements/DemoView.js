@@ -65,7 +65,6 @@ class DemoView extends LitElement {
     return until(generateDemoPage(this._project), loading);
   }
   render(){
-    console.log(this._project);
     return html`
     <iframe
       id="iframe"
@@ -75,7 +74,6 @@ class DemoView extends LitElement {
     `;
   }
   set project(project) {
-    console.log({project})
     const before = this._project;
     this._project = project;
     if(before === project){

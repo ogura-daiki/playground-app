@@ -70,7 +70,6 @@ class MonacoEditor extends HTMLElement{
       automaticLayout: true,
     });
     this.#editor.getModel().onDidChangeContent((event) => {
-      console.log(event)
       if(this.stopUpdate) return;
       this.dispatchEvent(new CustomEvent("updateValue", {detail:{file:this.#file, newVal:this.#editor.getValue()}}));
     });
