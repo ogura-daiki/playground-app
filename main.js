@@ -161,6 +161,22 @@ class PlayGroundApp extends BaseElement {
           border-radius:999999vmax;
           align-self:center;
         }
+        .projects_area .project .menu_list{
+          gap:4px;
+          padding-left:8px;
+          align-items:center;
+        }
+        .projects_area .project .menu{
+          width:1.5rem;
+          height:1.5rem;
+          font-size:1rem;
+          background:transparent;
+          border-radius:.2rem;
+        }
+        .projects_area .project .menu:hover{
+          background:rgba(255,255,255,.2);
+        }
+        
         
         .file_tabs{
           background:darkslateblue;
@@ -295,7 +311,7 @@ class PlayGroundApp extends BaseElement {
       this.requestUpdate();
     }
     const menuButton = (icon, click) => html`
-    <i class="centering menu" style="width:1.5rem;height:1.5rem;font-size:1rem;" @click=${click}>${icon}</i>
+    <i class="centering menu" @click=${click}>${icon}</i>
     `;
     return html`
       <div
@@ -313,7 +329,7 @@ class PlayGroundApp extends BaseElement {
       >
         <span class=grow>${name}</span>
         ${when(this.ctx.project===id, ()=>html`<div class=badge>選択中</div>`)}
-        <div class="row" style="gap:4px;padding-left:8px;align-items:center;">
+        <div class="row menu_list">
           ${menuButton("content_copy", onCopy)}
           ${menuButton("delete", onDelete)}
         </div>
