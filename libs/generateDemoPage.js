@@ -1,5 +1,6 @@
 import make from "./make.js";
 import scriptLoader from "../inserts/demo/scriptLoader.js";
+import { createId } from "./ModelUtil.js";
 
 const styleLoader = () => {
   const template = document.querySelector("#__imported_style_map");
@@ -85,7 +86,18 @@ const makeJSONImport = (id, textContent) => make("script", {
   type:"text/json",
   id,
   textContent,
-})
+});
+
+const injectScripts = (project, scripts, {insertData, onProcess}) => {
+  if(!insertData){
+    scripts.push(createScriptElem(`(${onProcess+""})()`));
+    return;
+  }
+  //idは１文字目を数字にできないので _を付ける
+  const injectionId = "_"+createId();
+  scripts.push(makeJSONImport(injectionId, JSON.stringify(insertData(project))));
+  scripts.push(createScriptElem(`(${onProcess+""})(JSON.parse(document.querySelector(\`#${injectionId}\`).textContent))`));
+}
 
 const generateDemoPage = async (project) => {
   const entryFile = project.findFileById(project.entryFile);
@@ -125,8 +137,7 @@ const generateDemoPage = async (project) => {
     createScriptElem(`(()=>{${getFuncContents(webStorageWrapper)}})()`),
   ];
 
-  scripts.push(makeJSONImport("temp", JSON.stringify(scriptLoader.insertData(project))));
-  scripts.push(createScriptElem(`(${scriptLoader.onProcess+""})(JSON.parse(document.querySelector(\`#${"temp"}\`).textContent))`));
+  injectScripts(project, scripts, scriptLoader);
   
   if(importMapScript){
     scripts.reverse().forEach(e=>importMapScript.after(e));
