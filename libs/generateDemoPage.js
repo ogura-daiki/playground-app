@@ -81,6 +81,12 @@ const file2DataUri = (fileName, value) => new Promise(resolve=>{
   fileReader.readAsDataURL(file);
 });
 
+const makeJSONImport = (id, textContent) => make("script", {
+  type:"text/json",
+  id,
+  textContent,
+})
+
 const generateDemoPage = async (project) => {
   const entryFile = project.findFileById(project.entryFile);
   const dom = new DOMParser().parseFromString(binaryString2String(entryFile.value), "text/html");
@@ -99,10 +105,9 @@ const generateDemoPage = async (project) => {
   importMapScript.textContent = JSON.stringify(importsMap);
 
   const scripts = [
-    make("script", {
-      type:"text/json",
-      id:"__imported_style_map",
-      textContent:JSON.stringify(
+    makeJSONImport(
+      "__imported_style_map",
+      JSON.stringify(
         project
           .findFilesByLanguage("css")
           .reduce(
@@ -111,26 +116,23 @@ const generateDemoPage = async (project) => {
             {}
           )
       )
-    }),
+    ),
     createScriptElem(`(()=>{${getFuncContents(styleLoader)}})()`),
-    make("script", {
-      type:"text/json",
-      id:"__imported_script_map",
-      textContent:JSON.stringify(
-        scriptFiles
-          .reduce(
+    makeJSONImport(
+      "__imported_script_map",
+      JSON.stringify(
+        scriptFiles.reduce(
           (o,{path,file})=>
             Object.assign(o,{[path]:binaryString2String(file.value)}),
-            {}
-          )
+          {}
+        )
       )
-    }),
+    ),
     createScriptElem(`(()=>{${getFuncContents(scriptLoader)}})()`),
-    make("script", {
-      type:"text/json",
-      id:"__local_storage_backup",
-      textContent:JSON.stringify([["test", "バックアップテスト"]])
-    }),
+    makeJSONImport(
+      "__local_storage_backup",
+      JSON.stringify([["test", "バックアップテスト"]])
+    ),
     createScriptElem(`(()=>{${getFuncContents(webStorageWrapper)}})()`),
   ];
   if(importMapScript){
