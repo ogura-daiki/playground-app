@@ -34,6 +34,31 @@ const scriptLoader = () => {
   }
   customElements.define("script-loader", ScriptLoader);
 }
+const webStorageWrapper = () => {
+  const backup = JSON.parse(document.querySelector("#__local_storage_backup").textContent);
+  const createStorage = (data, { set=()=>{}, clear=()=>{} }={}) => {
+    const storage = new Map(data);
+    return Object.assign(Object.create(null), {
+      key:n=>[...storage.keys()][n],
+      getItem:name=>storage.get(name),
+      setItem:(name, value)=>{
+        storage.set(name,value+"");
+        set(name, value);
+      },
+      removeItem:(key)=>void storage.delete(key),
+      clear:()=>{
+        storage.clear();
+        clear();
+      },
+    });
+  }
+  Object.defineProperty(window, "sessionStorage", {
+    value:createStorage(),
+  });
+  Object.defineProperty(window, "localStorage", {
+    value:createStorage(backup),
+  });
+}
 
 const createScriptElem = (content, type="text/javascript") => {
   return make("script", {textContent:content, type});
@@ -82,8 +107,8 @@ const generateDemoPage = async (project) => {
           .findFilesByLanguage("css")
           .reduce(
             (o,{path,file})=>
-              Object.assign(o,{[path]:binaryString2String(file.value)})
-            ,{}
+              Object.assign(o,{[path]:binaryString2String(file.value)}),
+            {}
           )
       )
     }),
@@ -92,13 +117,21 @@ const generateDemoPage = async (project) => {
       type:"text/json",
       id:"__imported_script_map",
       textContent:JSON.stringify(
-        scriptFiles.reduce((o,{path,file})=>Object.assign(
-          o,
-          {[path]:binaryString2String(file.value)}
-        ),{})
+        scriptFiles
+          .reduce(
+          (o,{path,file})=>
+            Object.assign(o,{[path]:binaryString2String(file.value)}),
+            {}
+          )
       )
     }),
     createScriptElem(`(()=>{${getFuncContents(scriptLoader)}})()`),
+    make("script", {
+      type:"text/json",
+      id:"__local_storage_backup",
+      textContent:JSON.stringify([["test", "バックアップテスト"]])
+    }),
+    createScriptElem(`(()=>{${getFuncContents(webStorageWrapper)}})()`),
   ];
   if(importMapScript){
     scripts.reverse().forEach(e=>importMapScript.after(e));
