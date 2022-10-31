@@ -57,30 +57,6 @@ const proto = {
   }
 };
 
-const receiver = (name, value) => {
-  const patterns = [
-    (name, value) => ({
-      cond: typeof value !== "object",
-      convert: () => value
-    }),
-    (name, value) => ({
-      cond: typeof value?.entryFile === "string",
-      convert: () => setProto(value, ProjectProto),
-    }),
-    (name, value) => ({
-      cond: value.type === "file",
-      convert: () => setProto(value, FileProto),
-    }),
-  ];
-  for (const p of patterns) {
-    const obj = p(name, value);
-    if (obj.cond){
-      return obj.convert();
-    }
-  }
-  return value;
-}
-
 const newProject = (name) => {
   const index = newFile({ name: "index.html" });
   return setProto({
