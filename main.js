@@ -313,6 +313,7 @@ class PlayGroundApp extends BaseElement {
           });
           //this.menu_opened = false;
           this.requestUpdate();
+          this.renderRoot.querySelector("#demo-view").project = undefined;
         }}
       >
         <span class=grow>${name}</span>
