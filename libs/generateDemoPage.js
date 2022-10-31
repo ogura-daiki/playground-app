@@ -1,4 +1,5 @@
 import make from "./make.js";
+import scriptLoader from "../inserts/demo/scriptLoader.js";
 
 const styleLoader = () => {
   const template = document.querySelector("#__imported_style_map");
@@ -16,23 +17,6 @@ const styleLoader = () => {
     }
   }
   customElements.define("style-loader", StyleLoader);
-}
-const scriptLoader = () => {
-  const template = document.querySelector("#__imported_script_map");
-  const scripts = JSON.parse(template.textContent);
-  class ScriptLoader extends HTMLElement {
-    constructor() {
-      super();
-    }
-    connectedCallback(){
-      const scriptElem = document.createElement("script");
-      this.before(scriptElem);
-      this.remove();
-      scriptElem.type = this.getAttribute("type")||"text/javascript";
-      scriptElem.textContent = scripts[this.getAttribute("src")];
-    }
-  }
-  customElements.define("script-loader", ScriptLoader);
 }
 const webStorageWrapper = () => {
   const storageContext = JSON.parse(document.querySelector("#__local_storage_backup").textContent);
@@ -105,7 +89,7 @@ const makeJSONImport = (id, textContent) => make("script", {
 
 const generateDemoPage = async (project) => {
   const entryFile = project.findFileById(project.entryFile);
-  const dom = new DOMParser().parseFromString(binaryString2String(entryFile.value), "text/html");
+  const dom = new DOMParser().parseFromString(entryFile.stringValue, "text/html");
   
   if(!dom.querySelector(`script[type="importmap"]`)){
     dom.head.insertBefore(make("script", {type:"importmap"}), dom.head.firstChild);
@@ -113,7 +97,7 @@ const generateDemoPage = async (project) => {
   const importMapScript = [...dom.querySelectorAll(`script[type="importmap"]`)].pop();
   const importsMap = JSON.parse(importMapScript.textContent||JSON.stringify({"imports":{}}));
   const scriptFiles = project.findFilesByLanguage("javascript");
-  const dataUris = await Promise.all(scriptFiles.map(({path,file}) => file2DataUri(file.name, binaryString2String(file.value)).then(data=>({path,data}))));
+  const dataUris = await Promise.all(scriptFiles.map(({path,file}) => file2DataUri(file.name, file.stringValue).then(data=>({path,data}))));
   dataUris.forEach(({path, data})=>{
     importsMap.imports[path] = data;
   });
@@ -128,29 +112,22 @@ const generateDemoPage = async (project) => {
           .findFilesByLanguage("css")
           .reduce(
             (o,{path,file})=>
-              Object.assign(o,{[path]:binaryString2String(file.value)}),
+              Object.assign(o,{[path]:file.stringValue}),
             {}
           )
       )
     ),
     createScriptElem(`(()=>{${getFuncContents(styleLoader)}})()`),
     makeJSONImport(
-      "__imported_script_map",
-      JSON.stringify(
-        scriptFiles.reduce(
-          (o,{path,file})=>
-            Object.assign(o,{[path]:binaryString2String(file.value)}),
-          {}
-        )
-      )
-    ),
-    createScriptElem(`(()=>{${getFuncContents(scriptLoader)}})()`),
-    makeJSONImport(
       "__local_storage_backup",
       JSON.stringify({project:project.id, data:project.localStorage})
     ),
     createScriptElem(`(()=>{${getFuncContents(webStorageWrapper)}})()`),
   ];
+
+  scripts.push(makeJSONImport("temp", JSON.stringify(scriptLoader.insertData(project))));
+  scripts.push(createScriptElem(`(${scriptLoader.onProcess+""})(JSON.parse(document.querySelector(\`#${"temp"}\`).textContent))`));
+  
   if(importMapScript){
     scripts.reverse().forEach(e=>importMapScript.after(e));
   }
