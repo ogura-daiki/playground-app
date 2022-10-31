@@ -36,6 +36,16 @@ export default {
           newProject("新規プロジェクト"),
         ];
       }
-    }
+    },
+    {
+      v: 1,
+      up: projects => {
+        console.log({projects})
+        return projects.map(project=>{
+          project.localStorage = [];
+          return project;
+        });
+      }
+    },
   ],
 };

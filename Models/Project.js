@@ -66,6 +66,7 @@ const newProject = (name) => {
     opened: index.id,
     tabs: [index.id],
     entryFile: index.id,
+    localStorage: [],
   }, proto);
 };
 
@@ -79,6 +80,7 @@ const copyProject = (name, baseProject) => {
   Object.assign(copied, {
     id:createId(),
     name,
+    localStorage:[],
   });
   return setProto(copied, proto);
 };
