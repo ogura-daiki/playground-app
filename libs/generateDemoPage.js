@@ -1,73 +1,13 @@
 import make from "./make.js";
-import scriptLoader from "../inserts/demo/scriptLoader.js";
 import { createId } from "./ModelUtil.js";
+import scriptLoader from "../inserts/demo/scriptLoader.js";
+import styleLoader from "../inserts/demo/styleLoader.js";
+import webStorageWrapper from "../inserts/demo/webStorageWrapper.js";
 
-const styleLoader = () => {
-  const template = document.querySelector("#__imported_style_map");
-  const styles = JSON.parse(template.textContent);
-  class StyleLoader extends HTMLElement {
-    constructor() {
-      super();
-    }
-    connectedCallback(){
-      const style = document.createElement("style");
-      const href = this.getAttribute("href");
-      style.innerHTML = styles[href]||"";
-      this.before(style);
-      this.remove();
-    }
-  }
-  customElements.define("style-loader", StyleLoader);
-}
-const webStorageWrapper = () => {
-  const storageContext = JSON.parse(document.querySelector("#__local_storage_backup").textContent);
-  const createStorage = (data, { set=()=>{}, clear=()=>{}, remove=()=>{} }={}) => {
-    const storage = new Map(data);
-    return Object.assign(Object.create(null), {
-      key:n=>[...storage.keys()][n],
-      getItem:name=>storage.get(name),
-      setItem:(name, value)=>{
-        storage.set(name,value+"");
-        set(name, value);
-      },
-      removeItem:(key)=>{
-        storage.delete(key);
-        remove(key);
-      },
-      clear:()=>{
-        storage.clear();
-        clear();
-      },
-    });
-  }
-  Object.defineProperty(window, "sessionStorage", {
-    value:createStorage(),
-  });
-  const sendMessage = (detail) => {
-    parent.postMessage({action:"localStorage", project:storageContext.project, detail}, "*");
-  }
-  Object.defineProperty(window, "localStorage", {
-    value:createStorage(storageContext.data, {
-      set(name, value){
-        sendMessage({action:"set", args:[name, value]});
-      },
-      remove(name){
-        sendMessage({action:"remove", args:[name]});
-      },
-      clear(){
-        sendMessage({action:"clear", args:[]});
-      }
-    }),
-  });
-}
+const injections = [scriptLoader, styleLoader, webStorageWrapper];
 
 const createScriptElem = (content, type="text/javascript") => {
   return make("script", {textContent:content, type});
-}
-const getFuncContents = func => {
-  const str = func + "";
-  const funcContentStr = str.replace(/^[^{]*{/, "").replace(/}[^}]*$/, "");
-  return funcContentStr;
 }
 
 const file2DataUri = (fileName, value) => new Promise(resolve=>{
@@ -116,28 +56,9 @@ const generateDemoPage = async (project) => {
 
   importMapScript.textContent = JSON.stringify(importsMap);
 
-  const scripts = [
-    makeJSONImport(
-      "__imported_style_map",
-      JSON.stringify(
-        project
-          .findFilesByLanguage("css")
-          .reduce(
-            (o,{path,file})=>
-              Object.assign(o,{[path]:file.stringValue}),
-            {}
-          )
-      )
-    ),
-    createScriptElem(`(()=>{${getFuncContents(styleLoader)}})()`),
-    makeJSONImport(
-      "__local_storage_backup",
-      JSON.stringify({project:project.id, data:project.localStorage})
-    ),
-    createScriptElem(`(()=>{${getFuncContents(webStorageWrapper)}})()`),
-  ];
+  const scripts = [];
 
-  injectScripts(project, scripts, scriptLoader);
+  injections.forEach(injection=>injectScripts(project, scripts, injection));
   
   if(importMapScript){
     scripts.reverse().forEach(e=>importMapScript.after(e));
