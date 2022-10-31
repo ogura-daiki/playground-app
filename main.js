@@ -52,6 +52,45 @@ class PlayGroundApp extends BaseElement {
     this.menu_opened = false;
     this.files_opened = false;
     this.searchText = "";
+
+    
+    //const self = this;
+    window.addEventListener("message", (event) => {
+      const actionName = event.data?.action;
+      const actions = new Map(Object.entries({
+        localStorage: ({project, detail})=>{
+          if(this.ctx.project !== project) return;
+          const {action, args} = detail;
+          const pro = this.getCurrentProject();
+          if(action === "clear"){
+            this.updateProjects(()=>{
+              pro.localStorage = [];
+            });
+            return;
+          }
+          const targetIndex = pro.localStorage.findIndex(([name])=>name === args[0]);
+          if(targetIndex === -1){
+            if(action==="remove") return;
+          }
+
+          this.updateProjects(()=>{
+            if(action === "set") {
+              if(targetIndex===-1){
+                pro.localStorage.push([args[0], args[1]]);
+              }
+              else{
+                pro.localStorage[targetIndex] = [args[0], args[1]]
+              }
+            }
+            else if(action === "remove") {
+              pro.localStorage.splice(targetIndex, 1);
+            }
+          });
+        },
+      }));
+      if(!actions.has(actionName)) return;
+      this.renderRoot.getElementById("demo-view").sendMessage(actions.get(actionName)(event.data));
+    }, false);
   }
   static get styles() {
     return [

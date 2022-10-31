@@ -35,8 +35,8 @@ const scriptLoader = () => {
   customElements.define("script-loader", ScriptLoader);
 }
 const webStorageWrapper = () => {
-  const backup = JSON.parse(document.querySelector("#__local_storage_backup").textContent);
-  const createStorage = (data, { set=()=>{}, clear=()=>{} }={}) => {
+  const storageContext = JSON.parse(document.querySelector("#__local_storage_backup").textContent);
+  const createStorage = (data, { set=()=>{}, clear=()=>{}, remove=()=>{} }={}) => {
     const storage = new Map(data);
     return Object.assign(Object.create(null), {
       key:n=>[...storage.keys()][n],
@@ -45,7 +45,10 @@ const webStorageWrapper = () => {
         storage.set(name,value+"");
         set(name, value);
       },
-      removeItem:(key)=>void storage.delete(key),
+      removeItem:(key)=>{
+        storage.delete(key);
+        remove(key);
+      },
       clear:()=>{
         storage.clear();
         clear();
@@ -55,8 +58,21 @@ const webStorageWrapper = () => {
   Object.defineProperty(window, "sessionStorage", {
     value:createStorage(),
   });
+  const sendMessage = (detail) => {
+    parent.postMessage({action:"localStorage", project:storageContext.project, detail}, "*");
+  }
   Object.defineProperty(window, "localStorage", {
-    value:createStorage(backup),
+    value:createStorage(storageContext.data, {
+      set(name, value){
+        sendMessage({action:"set", args:[name, value]});
+      },
+      remove(name){
+        sendMessage({action:"remove", args:[name]});
+      },
+      clear(){
+        sendMessage({action:"clear", args:[]});
+      }
+    }),
   });
 }
 
@@ -131,7 +147,7 @@ const generateDemoPage = async (project) => {
     createScriptElem(`(()=>{${getFuncContents(scriptLoader)}})()`),
     makeJSONImport(
       "__local_storage_backup",
-      JSON.stringify([["test", "バックアップテスト"]])
+      JSON.stringify({project:project.id, data:project.localStorage})
     ),
     createScriptElem(`(()=>{${getFuncContents(webStorageWrapper)}})()`),
   ];
