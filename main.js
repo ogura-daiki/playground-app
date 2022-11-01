@@ -1,6 +1,5 @@
 
 import { html, css, when } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
-import Store from "./libs/Store.js";
 import "./elements/MonacoEditor.js";
 import { newProject, copyProject } from './Models/Project.js';
 import BaseElement from './elements/BaseElement.js';
@@ -10,6 +9,9 @@ import "./elements/Split.js";
 import "./elements/DemoView.js";
 import "./elements/MenuIcon.js";
 import { incrementFileNameSuffix } from './libs/incrementFileNameSuffix.js';
+import LocalStorageStore from './libs/LocalStorageStore.js';
+
+const store = new LocalStorageStore();
 
 const debounce = func => {
   let timer;
@@ -46,9 +48,9 @@ class PlayGroundApp extends BaseElement {
         this.renderRoot.querySelector("#demo-view").project = this.getCurrentProject();
       }
     });
-    this.config = Store.get("config");
-    this.ctx = Store.get("ctx");
-    this.projects = Store.get("projects");
+    this.config = store.get("config");
+    this.ctx = store.get("ctx");
+    this.projects = store.get("projects");
     this.menu_opened = false;
     this.files_opened = false;
     this.searchText = "";
@@ -645,17 +647,17 @@ class PlayGroundApp extends BaseElement {
 
   updateCtx(func) {
     func(this.ctx);
-    Store.set("ctx", this.ctx);
+    store.set("ctx", this.ctx);
   }
 
   updateConfig(func) {
     func(this.config);
-    Store.set("config", this.config);
+    store.set("config", this.config);
   }
 
   updateProjects(func) {
     func(this.projects);
-    Store.set("projects", this.projects);
+    store.set("projects", this.projects);
   }
 
   #compileProject(){
