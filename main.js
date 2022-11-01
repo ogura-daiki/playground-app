@@ -9,9 +9,10 @@ import "./elements/Split.js";
 import "./elements/DemoView.js";
 import "./elements/MenuIcon.js";
 import { incrementFileNameSuffix } from './libs/incrementFileNameSuffix.js';
-import LocalStorageStore from './libs/LocalStorageStore.js';
+import LocalStorageStore from 'https://ogura-daiki.github.io/store/LocalStorageStore.js';
+import Models from "./Migrations/index.js";
 
-const store = new LocalStorageStore();
+const store = new LocalStorageStore(Models);
 
 const debounce = func => {
   let timer;
