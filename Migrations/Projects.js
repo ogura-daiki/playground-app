@@ -2,7 +2,7 @@ import { setProto } from "../libs/ModelUtil.js";
 import { proto as FileProto } from "../Models/File.js";
 import { proto as ProjectProto, newProject } from "../Models/Project.js";
 
-const receiver = (name, value) => {
+const deserializer = (name, value) => {
   const patterns = [
     (name, value) => ({
       cond: typeof value !== "object",
@@ -27,7 +27,6 @@ const receiver = (name, value) => {
 }
 
 export default {
-  receiver,
   migrations:[
     {
       v: 0,
@@ -35,7 +34,8 @@ export default {
         return [
           newProject("新規プロジェクト"),
         ];
-      }
+      },
+      deserializer,
     },
     {
       v: 1,
@@ -44,7 +44,8 @@ export default {
           project.localStorage = [];
           return project;
         });
-      }
+      },
+      deserializer,
     },
   ],
 };
