@@ -11,6 +11,8 @@ import "./elements/MenuIcon.js";
 import { incrementFileNameSuffix } from './libs/incrementFileNameSuffix.js';
 import LocalStorageStore from 'https://ogura-daiki.github.io/store/LocalStorageStore.js';
 import Models from "./Migrations/index.js";
+import generateProjectHTML from './libs/generateProjectHTML.js';
+import downloadDataURI from './libs/downloadDataURI.js';
 
 const store = new LocalStorageStore(Models);
 
@@ -635,6 +637,13 @@ class PlayGroundApp extends BaseElement {
                 <button id="run" @click=${e => {
                   this.updater.force();
                 }}>RUN</button>
+                <button id="download" @click=${async e => {
+                  const pro = this.getCurrentProject();
+                  const html = await generateProjectHTML(pro);
+                  const fileName = pro.name+".html";
+                  const dataURI = binaryString2DataURI(string2BinaryString(html), getMimeTypeFromFileName(fileName));
+                  downloadDataURI(dataURI, fileName);
+                }}>保存</button>
               </div>
             </div>
             <div slot=1 class="fill">
