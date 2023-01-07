@@ -7,7 +7,7 @@ export default {
       const storage = new Map(data);
       return Object.assign(Object.create(null), {
         key:n=>[...storage.keys()][n],
-        getItem:name=>storage.get(name),
+        getItem:name=>storage.has(name)?storage.get(name):null,
         setItem:(name, value)=>{
           storage.set(name,value+"");
           set(name, value);
