@@ -268,6 +268,7 @@ class PlayGroundApp extends BaseElement {
           border-right:1px solid lightgray;
           color:white;
           background:rgba(100,100,0,0);
+          user-select:none;
         }
         .file_tab.open{
           background:rgba(255,255,200,.2);
