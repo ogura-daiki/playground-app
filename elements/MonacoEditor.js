@@ -42,7 +42,6 @@ class MonacoEditor extends HTMLElement{
         padding:0px;
         width:100%;
         height:100%;
-        overflow:hidden;
       }
     `;
   }

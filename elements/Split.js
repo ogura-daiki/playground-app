@@ -101,7 +101,6 @@ class Split extends LitElement {
           ${this.md != null ? "user-select:none;pointer-events:none;" : ""}
           ${this.vertical ? "height" : "width"}:${this.currentWeight[i] * 100}%;
           display:block;
-          overflow:hidden;
         "
       >${i}</slot>
     `).reduce((c, v, i) => {
