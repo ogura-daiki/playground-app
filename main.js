@@ -318,7 +318,7 @@ class PlayGroundApp extends BaseElement {
   fileList() {
     const project = this.getCurrentProject();
 
-    const getFileTypeName = file => ({folder:"フォルダ",file:"ファイル"}[file.type]);
+    const getFileTypeName = type => ({folder:"フォルダ",file:"ファイル"}[type]);
 
     const sortFiles = files=>{
       files.sort((v1, v2)=>{
@@ -333,8 +333,8 @@ class PlayGroundApp extends BaseElement {
       this.openTab(project, file.id);
     }
     const onCreate = ({files, name, type})=>{
-      if(files.some(f=>f.name === newFile.name)){
-        alert(`${getFileTypeName(newFile)}名：${newFile.name}はフォルダ内に既に存在します。`);
+      if(files.some(f=>f.name === name)){
+        alert(`${getFileTypeName(type)}名：${name}はフォルダ内に既に存在します。`);
         return;
       }
       this.updateProjects(()=>{
@@ -352,7 +352,7 @@ class PlayGroundApp extends BaseElement {
         }
       }
       if(files.some(f=>f!==file&&f.name === name)){
-        alert(`${getFileTypeName(file)}名：${name}はフォルダ内に既に存在します。`);
+        alert(`${getFileTypeName(file.type)}名：${name}はフォルダ内に既に存在します。`);
         return;
       }
       this.updateProjects(()=>{
@@ -370,7 +370,7 @@ class PlayGroundApp extends BaseElement {
         alert("フォルダ内に初期ファイルが含まれているので削除できません");
         return;
       }
-      if(confirm(`${getFileTypeName(file)}名：${file.name}を削除してもよろしいですか？`)){
+      if(confirm(`${getFileTypeName(file.type)}名：${file.name}を削除してもよろしいですか？`)){
         this.updateProjects(()=>{
           if(project.tabs.includes(file.id)){
             this.closeTab(project, file.id);
