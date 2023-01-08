@@ -1,6 +1,6 @@
 export default {
   insertData:(project) => {
-    return project.findFilesByLanguage("javascript")
+    return project.findFilesByLanguageWithFilePath("javascript")
       .reduce(
         (o,{path,file})=>
           Object.assign(o,{[path]:file.stringValue}),

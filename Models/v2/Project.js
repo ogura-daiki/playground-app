@@ -68,8 +68,9 @@ const proto = {
   getOpenedFile() {
     return this.findFileById(this.opened);
   },
-  findFilesByLanguage(language) {
-    return searchFiles(this.files, f => getLanguageFromFileName(f.name) === language, { multiple: true, type:"file" });
+  findFilesByLanguageWithFilePath(language) {
+    return  searchFiles(this.files, f => getLanguageFromFileName(f.name) === language, { multiple: true, type:"file" })
+              .map(file=>({file, path:this.getFileObjPath(file.id)}));
   },
   procToFiles(callback) {
     searchFiles(this.files, callback, { multiple: true, type:"file" });

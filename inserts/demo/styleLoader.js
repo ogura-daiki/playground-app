@@ -1,6 +1,6 @@
 export default {
   insertData:(project) => {
-    return project.findFilesByLanguage("css")
+    return project.findFilesByLanguageWithFilePath("css")
       .reduce(
         (o,{path,file})=>
           Object.assign(o,{[path]:file.stringValue}),

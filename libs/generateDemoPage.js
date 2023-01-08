@@ -48,7 +48,7 @@ const generateDemoPage = async (project) => {
   }
   const importMapScript = [...dom.querySelectorAll(`script[type="importmap"]`)].pop();
   const importsMap = JSON.parse(importMapScript.textContent||JSON.stringify({"imports":{}}));
-  const scriptFiles = project.findFilesByLanguage("javascript");
+  const scriptFiles = project.findFilesByLanguageWithFilePath("javascript");
   const dataUris = await Promise.all(scriptFiles.map(({path,file}) => file2DataUri(file.name, file.stringValue).then(data=>({path,data}))));
   dataUris.forEach(({path, data})=>{
     importsMap.imports[path] = data;
