@@ -57,6 +57,11 @@ const proto = {
     } while(next);
     return false;
   },
+  containsName(parentFolderId, name){
+    return !!searchFiles(this.files, file=>{
+      return file.parent === parentFolderId && file.name === name;
+    }, {type:"all"});
+  },
   hasEntryFile(parentFolder) {
     this.contains(parentFolder, this.findFileById(this.entryFile));
   },
