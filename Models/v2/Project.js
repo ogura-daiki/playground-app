@@ -41,15 +41,16 @@ const proto = {
       return file.parent === folder.id;
     }, {type, multiple:true});
   },
-  contains(parentFolder, fobj){
+  contains(parentFolderId, fobjId){
+    const parentFolder = this.findFileObjById(parentFolderId);
     if (parentFolder.type !== "folder") return false;
     const filesIdMap = new Map();
     for (const f of this.files) {
       filesIdMap.set(f.id, f);
     }
-    let next = fobj;
+    let next = this.findFileObjById(fobjId);
     do{
-      if(next.id === parentFolder.id){
+      if(next.id === parentFolderId){
         return true;
       }
       next = filesIdMap.get(next.parent);
