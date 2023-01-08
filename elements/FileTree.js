@@ -102,15 +102,15 @@ class FileTree extends BaseElement {
   static get properties() {
     return {
       nest: { type: Number },
+      project: { type: Object },
       data: { type: Object },
-      parent: { type: Object },
       open: { type: Boolean },
     }
   }
   constructor() {
     super();
-    this.data = { name: "temp.html" };
-    this.parent = { files: [] };
+    this.project = undefined;
+    this.data = undefined;
     this.nest = 0;
     this.open = false;
   }
@@ -140,11 +140,12 @@ class FileTree extends BaseElement {
     `
   }
   render() {
+    if(!this.project || !this.data) return;
     return html`
     <div
       class="${this.data.type} main"
       title=${this.data.name}
-      .draggable=${!!this.nest}
+      .draggable=${this.nest > 0}
       style="gap:4px;padding-right:8px;align-items: center;"
       @click=${e => {
         if (this.data.type === "folder") {
@@ -162,7 +163,7 @@ class FileTree extends BaseElement {
       @drop=${e=>{
         e.preventDefault();
         const fileId = e.dataTransfer.getData(dataTransferKey);
-        const toFolder = this.data.type==="folder"?this.data:this.parent;
+        const toFolder = this.data.type = "folder"?this.data.id:this.data.parent;
         this.emit("move", {
           to:toFolder,
           fileId,
@@ -193,10 +194,9 @@ class FileTree extends BaseElement {
         }}>
           ${this.nest?html`
             <button class="centering menu_button" @click=${e=>{
-              const name = prompt({folder:"フォルダ",file:"ファイル"}[this.data.type]+"名を変更", this.data.name)?.trim();
+              const name = prompt(this.data.typeString+"名を変更", this.data.name)?.trim();
               if(name){
                 this.emit("rename", {
-                  files:this.parent.files,
                   file:this.data,
                   name,
                 });
@@ -205,7 +205,6 @@ class FileTree extends BaseElement {
             }}><i>drive_file_rename_outline</i></button>
             <button class="centering menu_button" @click=${e=>{
               this.emit("delete", {
-                files:this.parent.files,
                 file:this.data,
               });
               this.emit("deleted", {
@@ -220,7 +219,7 @@ class FileTree extends BaseElement {
                 this.emit("create", {
                   type:"file",
                   name,
-                  files:this.data.files,
+                  to:this.data,
                 });
                 this.requestUpdate();
               }
@@ -229,9 +228,9 @@ class FileTree extends BaseElement {
               const name = prompt("フォルダ名を入力")?.trim();
               if(name){
                 this.emit("create", {
-                  name,
                   type:"folder",
-                  files:this.data.files,
+                  name,
+                  files:this.data,
                 });
                 this.requestUpdate();
               }
@@ -242,15 +241,15 @@ class FileTree extends BaseElement {
     </div>        
     ${this.data.type === "folder" ? html`
     <div style="display:${this.open ? "contents" : "none"}">
-      ${this.data.files.map(e =>
+      ${this.project.findChildren(this.data, "all").map(file =>
         html`
         <file-tree
           @deleted=${e=>this.requestUpdate()}
           @dragend=${e=>{
             this.requestUpdate();
           }}
-          .parent=${this.data}
-          .data=${e}
+          .project=${this.project}
+          .data=${file}
           .nest=${this.nest + 1}
         ></file-tree>`
       )}

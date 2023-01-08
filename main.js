@@ -406,7 +406,8 @@ class PlayGroundApp extends BaseElement {
           <file-tree
             class="root"
             .open=${true}
-            .data=${{ name: project.name, type: "folder", files:project.files }}
+            .project=${this.getCurrentProject()}
+            .data=${{ name: project.name, type: "folder" }}
             .nest=${0}
             @select=${({detail})=>onSelect(detail)}
             @rename=${({detail})=>onRename(detail)}
