@@ -331,7 +331,7 @@ class PlayGroundApp extends BaseElement {
       this.openTab(project, file.id);
     }
     const onCreate = ({to, name, type})=>{
-      if(this.getCurrentProject().containsName(to, name)){
+      if(this.getCurrentProject().hasSameNameInFolder(to, name)){
         alert(`ファイル名：${name}は使用できません。\nこのフォルダ内には既に同様の名称のファイル、またはフォルダが存在します。`);
         return;
       }
@@ -348,7 +348,7 @@ class PlayGroundApp extends BaseElement {
           return;
         }
       }
-      if(project.containsName(file.parent, name)){
+      if(project.hasSameNameInFolder(file.parent, name)){
         alert(`${file.typeString}名：${name}はフォルダ内に既に存在します。`);
         return;
       }
@@ -362,7 +362,7 @@ class PlayGroundApp extends BaseElement {
         alert("初期ファイルは削除できません");
         return;
       }
-      if(file.type==="folder" && project.contains(file.id, project.entryFile)){
+      if(file.type==="folder" && project.containsFolder(file.id, project.entryFile)){
         alert("フォルダ内に初期ファイルが含まれているので削除できません");
         return;
       }
@@ -385,7 +385,7 @@ class PlayGroundApp extends BaseElement {
         return false;
       }
       //移動するファイルオブジェクト内に移動先のフォルダが含まれる場合は循環参照になるので移動させない
-      return !project.contains(moveId, toId);
+      return !project.containsFolder(moveId, toId);
     };
     const onMove = ({to, fileId})=>{
       if(!canMoveTo(to, fileId)){

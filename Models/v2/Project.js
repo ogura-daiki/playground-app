@@ -41,7 +41,7 @@ const proto = {
       return file.parent === folder.id;
     }, {type, multiple:true});
   },
-  contains(parentFolderId, fobjId){
+  containsFolder(parentFolderId, fobjId){
     const parentFolder = this.findFileObjById(parentFolderId);
     if (parentFolder.type !== "folder") return false;
     const filesIdMap = new Map();
@@ -57,7 +57,7 @@ const proto = {
     } while(next);
     return false;
   },
-  containsName(parentFolderId, name){
+  hasSameNameInFolder(parentFolderId, name){
     return !!searchFiles(this.files, file=>{
       return file.parent === parentFolderId && file.name === name;
     }, {type:"all"});
