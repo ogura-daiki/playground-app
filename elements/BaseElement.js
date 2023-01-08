@@ -34,6 +34,10 @@ class BaseElement extends LitElement{
       `,
     ];
   }
+
+  emit(type, detail={}, composed=true){
+    this.dispatchEvent(new CustomEvent(type, {detail, composed, bubbles:composed}));
+  }
 }
 
 export default BaseElement;
