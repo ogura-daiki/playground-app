@@ -34,6 +34,144 @@ const debounce = func => {
   };
 }
 
+const style = css`
+  :host{
+    display:block;
+  }
+  #container {
+    background: #fff;
+    gap: 4px;
+  }
+
+  #input {
+  }
+
+  #ig {
+    background: #eee;
+  }
+
+  .top_menu{
+    display:block;
+    padding:8px 8px;
+    width:3rem;
+    background:transparent;
+    border-right:1px solid lightgray;
+  }
+  .menu_icon{
+    aspect-ratio:1;
+    width:2.5rem;
+    height:2.5rem;
+    color:white;
+  }
+  .menu_icon i{
+    margin-top:0px;
+  }
+
+  .open .menu_icon{
+    transform:rotateZ(180deg);
+  }
+  .open .menu_icon:before{
+    height:var(--stroke-width);
+    background:white;
+    border-width:0px;
+    border-color:transparent;
+    transform:rotateZ(45deg);
+  }
+  .open .menu_icon:after{
+    transform:rotateZ(-45deg);
+  }
+
+  .code_area{
+    position:relative;
+    background:black;
+    color:white;
+  }
+  .code_area .no_opened_file{
+    font-size:.5rem;
+    user-select:none;
+    aspect-ratio:1;
+    background:rgba(255,255,255,.5);
+    padding:16px;
+    border-radius:16px;
+  }
+
+
+  .file_tabs{
+    background:darkslateblue;
+  }
+
+  .file_tabs .tab_list{
+    padding-right:8px;
+    overflow-x:overlay;
+  }
+
+  .filelist_open_button{
+    padding:0px;
+    user-select:none;
+    width:2.5rem;
+    height:2.5rem;
+    flex-shrink:0;
+    outline:none;
+    border:none;
+    background:darkslateblue;
+    border-right:1px solid white;
+  }
+  .filelist_open_button:where(:hover, :active){
+    background:rgb(100,100,140);
+  }
+  .filelist_open_button i{
+    font-size:1.5rem;
+    color:white;
+  }
+  .file_tab{
+    padding:4px 0px 4px 8px;
+    gap:4px;
+    align-items:center;
+    border-right:1px solid lightgray;
+    color:white;
+    background:rgba(100,100,0,0);
+    user-select:none;
+  }
+  .file_tab.open{
+    background:rgba(255,255,200,.2);
+  }
+  .file_tab .close_button{
+    width:1.5rem;
+    aspect-ratio:1;
+    border-radius:.2rem;
+    user-select:none;
+    margin:4px;
+    font-size:1rem;
+  }
+  .file_tab .close_button:where(:hover, :open){
+    background:rgba(255,255,200,.2)
+  }
+
+  .files_area{
+    position:absolute;
+    top:0px;
+    left:0px;
+    user-select:none;
+    /*ガラス調に*/
+    background: rgba( 47, 47, 47, 0.6 );
+    /*box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );*/
+    backdrop-filter: blur( 2px );
+    -webkit-backdrop-filter: blur( 2px );
+    border: 1px solid rgba( 255, 255, 255, 0.18 );
+    color:white;
+  }
+  .files_area .title{
+    font-size:1.5rem;
+    background: rgba( 47, 47, 47, 0.85 );
+    padding:4px 12px;
+  }
+  .files_area .files{
+    overflow-y:scroll;
+  }
+  file-tree.root{
+  }
+`;
+
 class PlayGroundApp extends BaseElement {
   static get properties() {
     return {
@@ -99,146 +237,7 @@ class PlayGroundApp extends BaseElement {
     }, false);
   }
   static get styles() {
-    return [
-      super.styles,
-      css`
-        :host{
-          display:block;
-        }
-        #container {
-          background: #fff;
-          gap: 4px;
-        }
-
-        #input {
-        }
-
-        #ig {
-          background: #eee;
-        }
-
-        .top_menu{
-          display:block;
-          padding:8px 8px;
-          width:3rem;
-          background:transparent;
-          border-right:1px solid lightgray;
-        }
-        .menu_icon{
-          aspect-ratio:1;
-          width:2.5rem;
-          height:2.5rem;
-          color:white;
-        }
-        .menu_icon i{
-          margin-top:0px;
-        }
-
-        .open .menu_icon{
-          transform:rotateZ(180deg);
-        }
-        .open .menu_icon:before{
-          height:var(--stroke-width);
-          background:white;
-          border-width:0px;
-          border-color:transparent;
-          transform:rotateZ(45deg);
-        }
-        .open .menu_icon:after{
-          transform:rotateZ(-45deg);
-        }
-
-        .code_area{
-          position:relative;
-          background:black;
-          color:white;
-        }
-        .code_area .no_opened_file{
-          font-size:.5rem;
-          user-select:none;
-          aspect-ratio:1;
-          background:rgba(255,255,255,.5);
-          padding:16px;
-          border-radius:16px;
-        }
-
-
-        .file_tabs{
-          background:darkslateblue;
-        }
-
-        .file_tabs .tab_list{
-          padding-right:8px;
-          overflow-x:overlay;
-        }
-
-        .filelist_open_button{
-          padding:0px;
-          user-select:none;
-          width:2.5rem;
-          height:2.5rem;
-          flex-shrink:0;
-          outline:none;
-          border:none;
-          background:darkslateblue;
-          border-right:1px solid white;
-        }
-        .filelist_open_button:where(:hover, :active){
-          background:rgb(100,100,140);
-        }
-        .filelist_open_button i{
-          font-size:1.5rem;
-          color:white;
-        }
-        .file_tab{
-          padding:4px 0px 4px 8px;
-          gap:4px;
-          align-items:center;
-          border-right:1px solid lightgray;
-          color:white;
-          background:rgba(100,100,0,0);
-          user-select:none;
-        }
-        .file_tab.open{
-          background:rgba(255,255,200,.2);
-        }
-        .file_tab .close_button{
-          width:1.5rem;
-          aspect-ratio:1;
-          border-radius:.2rem;
-          user-select:none;
-          margin:4px;
-          font-size:1rem;
-        }
-        .file_tab .close_button:where(:hover, :open){
-          background:rgba(255,255,200,.2)
-        }
-
-        .files_area{
-          position:absolute;
-          top:0px;
-          left:0px;
-          user-select:none;
-          /*ガラス調に*/
-          background: rgba( 47, 47, 47, 0.6 );
-          /*box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );*/
-          backdrop-filter: blur( 2px );
-          -webkit-backdrop-filter: blur( 2px );
-          border: 1px solid rgba( 255, 255, 255, 0.18 );
-          color:white;
-        }
-        .files_area .title{
-          font-size:1.5rem;
-          background: rgba( 47, 47, 47, 0.85 );
-          padding:4px 12px;
-        }
-        .files_area .files{
-          overflow-y:scroll;
-        }
-        file-tree.root{
-        }
-      `
-    ];
+    return [super.styles, style];
   }
 
   projectList() {
