@@ -219,7 +219,7 @@ class FileTree extends BaseElement {
                 this.emit("create", {
                   type:"file",
                   name,
-                  to:this.data,
+                  to:this.data.id,
                 });
                 this.requestUpdate();
               }
@@ -230,7 +230,7 @@ class FileTree extends BaseElement {
                 this.emit("create", {
                   type:"folder",
                   name,
-                  files:this.data,
+                  to:this.data.id,
                 });
                 this.requestUpdate();
               }
