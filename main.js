@@ -1,7 +1,7 @@
 
 import { html, css, when } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
 import "./elements/MonacoEditor.js";
-import { newProject, copyProject } from './Models/v1/Project.js';
+import { newProject, copyProject } from './Models/v2/Project.js';
 import BaseElement from './elements/BaseElement.js';
 import "./elements/FileTree.js";
 import { newFile, newFolder } from './Models/v1/File.js';
