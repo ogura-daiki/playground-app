@@ -378,24 +378,26 @@ class PlayGroundApp extends BaseElement {
         this.requestUpdate();
       }
     }
-    const onMove = ({to, fileId})=>{
-      const fromFiles = project.findParentByFileId(fileId);
-      if(fromFiles === to.files){
-        return;
-      }
-      const file = project.findFileObjFromId(fileId);
-      if(to.files.some(f=>f.name===file.name)){
-        return;
-      }
-      if(project.hasRefLoop(to.files, file)){
+    const canMoveTo = (toId, moveId) => {
+      if(toId === undefined) return true;
+      if(toId === moveId) return false;
+      const toFolder = this.getCurrentProject().findFileObjById(toId);
+      //移動先がない、またはフォルダでない場合移動できない
+      if(!toFolder || toFolder.type !== "folder"){
         return false;
       }
-      const fromIdx = fromFiles.findIndex(f=>f.id === file.id);
+      const moveFile = this.getCurrentProject().findFileObjById(moveId);
+      //移動するファイルオブジェクト内に移動先のフォルダが含まれる場合は循環参照になるので移動させない
+      return !project.contains(moveFile, toFolder);
+    };
+    const onMove = ({to, fileId})=>{
+      if(!canMoveTo(to, fileId)){
+        return;
+      }
+      const file = this.getCurrentProject().findFileObjById(fileId);
       this.updateProjects(()=>{
-        fromFiles.splice(fromIdx, 1);
-        to.files.push(file);
-        sortFiles(to.files);
-      })
+        file.parent = to;
+      });
       this.requestUpdate();
     }
 
@@ -407,7 +409,7 @@ class PlayGroundApp extends BaseElement {
             class="root"
             .open=${true}
             .project=${this.getCurrentProject()}
-            .data=${{ name: project.name, type: "folder" }}
+            .data=${{ id:undefined, name: project.name, type: "folder" }}
             .nest=${0}
             @select=${({detail})=>onSelect(detail)}
             @rename=${({detail})=>onRename(detail)}
@@ -454,7 +456,7 @@ class PlayGroundApp extends BaseElement {
         @click=${e => { this.files_opened = !this.files_opened }}
       ><i>file_copy</i></button>
       <div class="tab_list row scroll_overlay">
-      ${pro.tabs.map((id) => html`
+      ${pro.tabs.map((id) => console.log(id)||html`
         <div class="row file_tab ${when(id===pro.opened,()=>"open")}"
           @click=${e=>this.selectTab(pro, id)}
         >
