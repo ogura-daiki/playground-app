@@ -220,7 +220,7 @@ class PlayGroundApp extends BaseElement {
           background:rgba(255,255,255,.2);
         }
         
-        
+
         .file_tabs{
           background:darkslateblue;
         }
@@ -230,22 +230,6 @@ class PlayGroundApp extends BaseElement {
           overflow-x:overlay;
         }
 
-        .scroll_overlay::-webkit-scrollbar {
-          width:4px;
-          height:4px;
-        }
-        /*スクロールバーの軌道*/
-        .scroll_overlay::-webkit-scrollbar-track {
-          border-radius: 10px;
-          box-shadow: inset 0 0 6px rgba(0, 0, 0, .1);
-        }
-
-        /*スクロールバーの動く部分*/
-        .scroll_overlay::-webkit-scrollbar-thumb {
-          background-color: rgba(200,200,200, .5);
-          border-radius: 10px;
-          box-shadow:0 0 0 1px rgba(255, 255, 255, .3);
-        }
         .filelist_open_button{
           padding:0px;
           user-select:none;
@@ -317,7 +301,7 @@ class PlayGroundApp extends BaseElement {
 
   #searchProjects(){
     return this.projects.reduce((c,p,i)=>{if(!this.searchText || p.name.match(this.searchText)){c.push([p,i])}return c;},[]);
-  }
+    }
 
   #projectListItem(project, idx){
     const {id, name} = project;
@@ -366,10 +350,10 @@ class PlayGroundApp extends BaseElement {
         ${when(this.ctx.project===id, ()=>html`<div class=badge>選択中</div>`)}
         <div class="row menu_list">
           ${menuButton("download", async e=>{
-            const html = await generateProjectHTML(project);
-            const fileName = project.name+".html";
-            const dataURI = binaryString2DataURI(string2BinaryString(html), getMimeTypeFromFileName(fileName));
-            downloadDataURI(dataURI, fileName);
+      const html = await generateProjectHTML(project);
+      const fileName = project.name+".html";
+      const dataURI = binaryString2DataURI(string2BinaryString(html), getMimeTypeFromFileName(fileName));
+      downloadDataURI(dataURI, fileName);
           })}
           ${menuButton("content_copy", onCopy)}
           ${menuButton("delete", onDelete)}
@@ -386,10 +370,10 @@ class PlayGroundApp extends BaseElement {
         <div class="title row">
           <span class=grow>プロジェクト一覧</span>
           <i class="append centering" @click=${e => {
-            this.updateProjects(ps => {
-              ps.push(newProject());
-            });
-            this.requestUpdate();
+      this.updateProjects(ps => {
+        ps.push(newProject());
+      });
+      this.requestUpdate();
           }}>add</i>
         </div>
         <div class="row" style="padding:8px;gap:8px;">
