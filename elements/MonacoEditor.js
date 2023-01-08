@@ -31,6 +31,7 @@ class MonacoEditor extends HTMLElement{
     return `
       :host{
         display:block;
+        position:relative;
       }
       #editor{
         display:block;
