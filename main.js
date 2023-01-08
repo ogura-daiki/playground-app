@@ -334,15 +334,6 @@ class PlayGroundApp extends BaseElement {
   }
   fileList() {
     const project = this.getCurrentProject();
-    
-    const sortFiles = files=>{
-      files.sort((v1, v2)=>{
-        if(v1.type !== v2.type){
-          return v1.type === "folder"?-1:1;
-        }
-        return v1.name === v2.name?0:v1.name < v2.name?-1:1;
-      });
-    };
 
     const onSelect = (file)=>{
       this.openTab(project, file.id);
