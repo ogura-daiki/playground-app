@@ -70,7 +70,7 @@ const proto = {
   },
   findFilesByLanguageWithFilePath(language) {
     return  searchFiles(this.files, f => getLanguageFromFileName(f.name) === language, { multiple: true, type:"file" })
-              .map(file=>({file, path:this.getFileObjPath(file.id)}));
+              .map(file=>({file, path:this.getFileObjPath(file.id).join("/")}));
   },
   procToFiles(callback) {
     searchFiles(this.files, callback, { multiple: true, type:"file" });
@@ -90,7 +90,7 @@ const proto = {
       path.unshift(next.name);
       next = filesIdMap.get(next.parent);
     }
-    return path.join("/");
+    return path;
   },
 
   checkCanMove(toId, moveId){
