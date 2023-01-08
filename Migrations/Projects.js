@@ -1,6 +1,6 @@
 import { setProto } from "../libs/ModelUtil.js";
-import { proto as FileProto } from "../Models/File.js";
-import { proto as ProjectProto, newProject, deserializer } from "../Models/Project.js";
+import { proto as FileProto } from "../Models/v1/File.js";
+import { proto as ProjectProto, newProject, deserializer } from "../Models/v1/Project.js";
 
 export default {
   migrations:[

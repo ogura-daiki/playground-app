@@ -1,4 +1,4 @@
-import { initialProjectId } from "../Models/Project.js";
+import { initialProjectId } from "../Models/v1/Project.js";
 
 export default {
   migrations: [

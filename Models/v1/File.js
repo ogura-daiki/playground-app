@@ -1,4 +1,4 @@
-import {setProto, createId} from "../libs/ModelUtil.js";
+import {setProto, createId} from "../../libs/ModelUtil.js";
 
 const proto = {
   get stringValue() {
