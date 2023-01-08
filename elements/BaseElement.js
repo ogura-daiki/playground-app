@@ -30,6 +30,7 @@ class BaseElement extends LitElement{
         .centering{
           display:grid;
           place-items:center;
+          place-content:center;
         }
       `,
     ];
