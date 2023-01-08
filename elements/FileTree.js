@@ -148,7 +148,7 @@ class FileTree extends BaseElement {
           this.open = !this.open;
           return;
         }
-        this.dispatchEvent(new CustomEvent("select", {detail:this.data, bubbles:true, composed: true,}));
+        this.emit("select", this.data);
       }}
       @dragstart=${e=>{
         e.dataTransfer.setData("text", this.data.id);
@@ -160,16 +160,12 @@ class FileTree extends BaseElement {
         e.preventDefault();
         const fileId = e.dataTransfer.getData("text");
         const toFolder = this.data.type==="folder"?this.data:this.parent;
-        this.dispatchEvent(new CustomEvent("move", {
-          detail:{
-            to:toFolder,
-            fileId,
-          },
-          bubbles:true,
-          composed: true,
-        }));
+        this.emit("move", {
+          to:toFolder,
+          fileId,
+        });
         if(this.data.type==="file"){
-          this.dispatchEvent(new CustomEvent("dragend"));
+          this.emit("dragend");
           return;
         }
         this.requestUpdate();
@@ -196,62 +192,44 @@ class FileTree extends BaseElement {
             <button class="centering menu_button" @click=${e=>{
               const name = prompt({folder:"フォルダ",file:"ファイル"}[this.data.type]+"名を変更", this.data.name)?.trim();
               if(name){
-                this.dispatchEvent(new CustomEvent("rename", {
-                  detail:{
-                    files:this.parent.files,
-                    file:this.data,
-                    name,
-                  },
-                  bubbles:true,
-                  composed: true,
-                }));
+                this.emit("rename", {
+                  files:this.parent.files,
+                  file:this.data,
+                  name,
+                });
                 this.requestUpdate();
               }
             }}><i>drive_file_rename_outline</i></button>
             <button class="centering menu_button" @click=${e=>{
-              this.dispatchEvent(new CustomEvent("delete", {
-                detail:{
-                  files:this.parent.files,
-                  file:this.data,
-                },
-                bubbles:true,
-                composed: true,
-              }));
-              this.dispatchEvent(new CustomEvent("deleted", {
-                detail:{
-                  file:this.data,
-                },
-              }));
+              this.emit("delete", {
+                files:this.parent.files,
+                file:this.data,
+              });
+              this.emit("deleted", {
+                file:this.data,
+              });
             }}><i>delete</i></button>
           `:""}
           ${this.data.type==="folder"?html`
             <button class="centering menu_button" @click=${e=>{
               const name = prompt("ファイル名を入力")?.trim();
               if(name){
-                this.dispatchEvent(new CustomEvent("create", {
-                  detail:{
-                    type:"file",
-                    name,
-                    files:this.data.files,
-                  },
-                  bubbles:true,
-                  composed: true,
-                }));
+                this.emit("create", {
+                  type:"file",
+                  name,
+                  files:this.data.files,
+                });
                 this.requestUpdate();
               }
             }}><i>note_add</i></button>
             <button class="centering menu_button" @click=${e=>{
               const name = prompt("フォルダ名を入力")?.trim();
               if(name){
-                this.dispatchEvent(new CustomEvent("create", {
-                  detail:{
-                    name,
-                    type:"folder",
-                    files:this.data.files,
-                  },
-                  bubbles:true,
-                  composed: true,
-                }));
+                this.emit("create", {
+                  name,
+                  type:"folder",
+                  files:this.data.files,
+                });
                 this.requestUpdate();
               }
             }}><i>create_new_folder</i></button>
