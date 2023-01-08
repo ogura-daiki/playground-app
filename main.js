@@ -317,11 +317,17 @@ class PlayGroundApp extends BaseElement {
   }
   fileList() {
     const project = this.getCurrentProject();
-    //const files = project.files;
 
     const getFileTypeName = file => ({folder:"フォルダ",file:"ファイル"}[file.type]);
 
-    const equalsName = (f1, f2) => f1.name === f2.name;
+    const sortFiles = files=>{
+      files.sort((v1, v2)=>{
+        if(v1.type !== v2.type){
+          return v1.type === "folder"?-1:1;
+        }
+        return v1.name === v2.name?0:v1.name < v2.name?-1:1;
+      });
+    }
 
     const onSelect = (file)=>{
       this.openTab(project, file.id);
@@ -333,6 +339,7 @@ class PlayGroundApp extends BaseElement {
       }
       this.updateProjects(()=>{
         files.push({ file:newFile, folder:newFolder }[type]({name}));
+        sortFiles(files);
       });
       this.requestUpdate();
     }
@@ -388,6 +395,7 @@ class PlayGroundApp extends BaseElement {
       this.updateProjects(()=>{
         fromFiles.splice(fromIdx, 1);
         to.files.push(file);
+        sortFiles(to.files);
       })
       this.requestUpdate();
     }
