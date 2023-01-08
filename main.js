@@ -202,6 +202,7 @@ class PlayGroundApp extends BaseElement {
           place-items:center;
           border-radius:999999vmax;
           align-self:center;
+          user-select:none;
         }
         .projects_area .project .menu_list{
           gap:4px;
