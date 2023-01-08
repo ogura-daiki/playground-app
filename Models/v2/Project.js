@@ -78,6 +78,20 @@ const proto = {
     return [...this.files];
   },
 
+  getFileObjPath(fobjId){
+    const filesIdMap = new Map();
+    for (const f of this.files) {
+      filesIdMap.set(f.id, f);
+    }
+    let path = [];
+    let next = this.findFileObjById(fobjId);
+    while(next){
+      path.unshift(next.name);
+      next = filesIdMap.get(next.parent);
+    }
+    return path.join("/");
+  },
+
   checkCanMove(toId, moveId){
     if(toId === moveId){
       return false;
