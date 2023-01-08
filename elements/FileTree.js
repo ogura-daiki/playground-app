@@ -163,7 +163,7 @@ class FileTree extends BaseElement {
       @drop=${e=>{
         e.preventDefault();
         const fileId = e.dataTransfer.getData(dataTransferKey);
-        const toFolder = this.data.type = "folder"?this.data.id:this.data.parent;
+        const toFolder = this.data.type === "folder"?this.data.id:this.data.parent;
         this.emit("move", {
           to:toFolder,
           fileId,
