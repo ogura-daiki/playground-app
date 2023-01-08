@@ -340,7 +340,7 @@ class PlayGroundApp extends BaseElement {
       });
       this.requestUpdate();
     }
-    const onRename = ({files,file,name})=>{
+    const onRename = ({file, name})=>{
       if(project.entryFile === file.id){
         const lang = getLanguageFromFileName(name);
         if(lang !== "html"){
@@ -348,13 +348,12 @@ class PlayGroundApp extends BaseElement {
           return;
         }
       }
-      if(files.some(f=>f!==file&&f.name === name)){
+      if(project.containsName(file.parent, name)){
         alert(`${file.typeString}名：${name}はフォルダ内に既に存在します。`);
         return;
       }
       this.updateProjects(()=>{
         file.name = name;
-        sortFiles(files);
       });
       this.requestUpdate();
     }
