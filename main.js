@@ -240,55 +240,65 @@ class PlayGroundApp extends BaseElement {
     return [super.styles, style];
   }
 
-  projectList() {
-    const onSelect = e=>{
-      const {id} = e.detail.project;
-      this.updateCtx(ctx=>{
-        ctx.project = id;
-      });
-      this.requestUpdate();
-      this.renderRoot.querySelector("#demo-view").project = undefined;
+  findProjectById(id){
+    const idx = this.projects.findIndex(p=>p.id === id);
+    const project = this.projects[idx];
+    return {idx, project};
+  }
+
+  openProject(id){
+    const {project} = this.findProjectById(id);
+    if(!project) return;
+    this.updateCtx(ctx=>{
+      ctx.project = id;
+    });
+    this.requestUpdate();
+    this.renderRoot.querySelector("#demo-view").project = undefined;
+  }
+  deleteProject(id){
+    const {idx, project} = this.findProjectById(id);
+    if(!project) return;
+
+    const currentProject = this.getCurrentProject();
+    if(project.id === currentProject.id){
+      alert("選択中のプロジェクトは削除できません");
+      return;
     }
-    const onDelete = e=>{
-      const {id, name} = e.detail.project;
-      if(this.ctx.project===id){
-        alert("選択中のプロジェクトは削除できません");
-        return;
-      }
-      if(!confirm(`プロジェクト：${name}を削除してもよろしいですか？`)){
-        return;
-      }
-      this.updateProjects(projects=>{
-        const idx = this.projects.findIndex(p=>p.id === id);
-        if(idx < 0) return;
-        projects.splice(idx, 1);
-      });
-      this.requestUpdate();
-    };
-    const onCopy = e=>{
-      const project = e.detail.project;
-      this.updateProjects(projects=>{
-        const newName = incrementFileNameSuffix(project.name, projects.map(p=>p.name));
-        const copiedProject = copyProject(newName, project);
-        projects.push(copiedProject);
-      });
-      this.requestUpdate();
-    };
-    const onDownload = async e=>{
-      const project = e.detail.project;
-      const html = await generateProjectHTML(project);
-      const fileName = project.name+".html";
-      const dataURI = binaryString2DataURI(string2BinaryString(html), getMimeTypeFromFileName(fileName));
-      downloadDataURI(dataURI, fileName);
-    };
 
-    const onCreate = e => {
-      this.updateProjects(ps => {
-        ps.push(newProject());
-      });
-      this.requestUpdate();
-    };
+    if(!confirm(`プロジェクト：${project.name}を削除してもよろしいですか？`)){
+      return;
+    }
+    this.updateProjects(projects=>{
+      projects.splice(idx, 1);
+    });
+    this.requestUpdate();
+  }
+  copyProject(id){
+    const {project} = this.findProjectById(id);
+    if(!project) return;
+    this.updateProjects(projects=>{
+      const newName = incrementFileNameSuffix(project.name, projects.map(p=>p.name));
+      const copiedProject = copyProject(newName, project);
+      projects.push(copiedProject);
+    });
+    this.requestUpdate();
+  }
+  async downloadProjectHTML(id){
+    const {project} = this.findProjectById(id);
+    if(!project) return;
+    const html = await generateProjectHTML(project);
+    const fileName = project.name+".html";
+    const dataURI = binaryString2DataURI(string2BinaryString(html), getMimeTypeFromFileName(fileName));
+    downloadDataURI(dataURI, fileName);
+  }
+  appendBlankProject(){
+    this.updateProjects(ps => {
+      ps.push(newProject());
+    });
+    this.requestUpdate();
+  }
 
+  projectList() {
     return html`
       <view-projects
         class="fill"
@@ -296,12 +306,12 @@ class PlayGroundApp extends BaseElement {
         .projects=${this.projects}
         .selection=${this.ctx.project}
 
-        @deleteProject=${onDelete}
-        @copyProject=${onCopy}
-        @downloadProject=${onDownload}
-        @selectProject=${onSelect}
+        @deleteProject=${e=>this.deleteProject(e.detail.id)}
+        @copyProject=${e=>this.copyProject(e.detail.id)}
+        @downloadProject=${e=>this.downloadProjectHTML(e.detail.id)}
+        @selectProject=${e=>this.openProject(e.detail.id)}
 
-        @createProject=${onCreate}
+        @createProject=${e=>this.appendBlankProject()}
       ></view-projects>
     `;
   }
