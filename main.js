@@ -379,13 +379,18 @@ class PlayGroundApp extends BaseElement {
     const canMoveTo = (toId, moveId) => {
       if(toId === undefined) return true;
       if(toId === moveId) return false;
-      const toFolder = this.getCurrentProject().findFileObjById(toId);
+      const toFolder = project.findFileObjById(toId);
       //移動先がない、またはフォルダでない場合移動できない
       if(!toFolder || toFolder.type !== "folder"){
         return false;
       }
-      //移動するファイルオブジェクト内に移動先のフォルダが含まれる場合は循環参照になるので移動させない
-      return !project.containsFolder(moveId, toId);
+      const moveFileObj = project.findFileObjById(moveId);
+      return (
+        //移動するファイルオブジェクトの子孫に移動先のフォルダが含まれる場合は循環参照になるので移動させない
+        !project.containsFolder(moveId, toId)
+        //移動先に同じ名前のファイルオブジェクトがある場合は移動させない
+        && !project.hasSameNameInFolder(toId, moveFileObj.name)
+      );
     };
     const onMove = ({to, fileId})=>{
       if(!canMoveTo(to, fileId)){
