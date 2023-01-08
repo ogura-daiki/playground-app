@@ -365,6 +365,12 @@ class PlayGroundApp extends BaseElement {
         <span class=grow>${name}</span>
         ${when(this.ctx.project===id, ()=>html`<div class=badge>選択中</div>`)}
         <div class="row menu_list">
+          ${menuButton("download", async e=>{
+            const html = await generateProjectHTML(project);
+            const fileName = project.name+".html";
+            const dataURI = binaryString2DataURI(string2BinaryString(html), getMimeTypeFromFileName(fileName));
+            downloadDataURI(dataURI, fileName);
+          })}
           ${menuButton("content_copy", onCopy)}
           ${menuButton("delete", onDelete)}
         </div>
@@ -638,13 +644,6 @@ class PlayGroundApp extends BaseElement {
                 <button id="run" @click=${e => {
                   this.updater.force();
                 }}>RUN</button>
-                <button id="download" @click=${async e => {
-                  const pro = this.getCurrentProject();
-                  const html = await generateProjectHTML(pro);
-                  const fileName = pro.name+".html";
-                  const dataURI = binaryString2DataURI(string2BinaryString(html), getMimeTypeFromFileName(fileName));
-                  downloadDataURI(dataURI, fileName);
-                }}>保存</button>
               </div>
             </div>
             <div slot=1 class="fill">
