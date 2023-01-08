@@ -146,7 +146,7 @@ class ProjectsView extends BaseElement {
         ()=>html`
           <div class="fill centering">
             <i style="font-size:4rem">search</i>
-            <span>"${this.searchText}"に該当するプロジェクトは存在しません。</span>
+            <span style="overflow-wrap:anywhere">"${this.searchText}"に該当するプロジェクトは存在しません。</span>
           </div>
         `
       )}
