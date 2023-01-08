@@ -112,15 +112,15 @@ class ProjectsView extends BaseElement {
           if(selected){
             return;
           }
-          this.emit("selectProject", {project});
+          this.emit("selectProject", {id});
         }}
       >
         <span class=grow>${name}</span>
         ${when(selected, ()=>html`<div class=badge>選択中</div>`)}
         <div class="row menu_list">
-          ${menuButton("download", e=>this.emit("downloadProject", {project}))}
-          ${menuButton("content_copy", e=>this.emit("copyProject", {project}))}
-          ${menuButton("delete", e=>this.emit("deleteProject", {project}))}
+          ${menuButton("download", e=>this.emit("downloadProject", {id}))}
+          ${menuButton("content_copy", e=>this.emit("copyProject", {id}))}
+          ${menuButton("delete", e=>this.emit("deleteProject", {id}))}
         </div>
       </div>
     `;
