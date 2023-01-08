@@ -4,7 +4,7 @@ import "./elements/MonacoEditor.js";
 import { newProject, copyProject } from './Models/v2/Project.js';
 import BaseElement from './elements/BaseElement.js';
 import "./elements/FileTree.js";
-import { newFile, newFolder } from './Models/v1/File.js';
+import { newFile, newFolder } from './Models/v2/File.js';
 import "./elements/Split.js";
 import "./elements/DemoView.js";
 import "./elements/MenuIcon.js";
@@ -330,14 +330,13 @@ class PlayGroundApp extends BaseElement {
     const onSelect = (file)=>{
       this.openTab(project, file.id);
     }
-    const onCreate = ({files, name, type})=>{
-      if(files.some(f=>f.name === name)){
-        alert(`${f.typeString()}名：${name}はフォルダ内に既に存在します。`);
+    const onCreate = ({to, name, type})=>{
+      if(this.getCurrentProject().containsName(to, name)){
+        alert(`ファイル名：${name}は使用できません。\nこのフォルダ内には既に同様の名称のファイル、またはフォルダが存在します。`);
         return;
       }
       this.updateProjects(()=>{
-        files.push({ file:newFile, folder:newFolder }[type]({name}));
-        sortFiles(files);
+        this.getCurrentProject().files.push({ file:newFile, folder:newFolder }[type]({name, parent:to}));
       });
       this.requestUpdate();
     }
@@ -386,9 +385,8 @@ class PlayGroundApp extends BaseElement {
       if(!toFolder || toFolder.type !== "folder"){
         return false;
       }
-      const moveFile = this.getCurrentProject().findFileObjById(moveId);
       //移動するファイルオブジェクト内に移動先のフォルダが含まれる場合は循環参照になるので移動させない
-      return !project.contains(moveFile, toFolder);
+      return !project.contains(moveId, toId);
     };
     const onMove = ({to, fileId})=>{
       if(!canMoveTo(to, fileId)){
