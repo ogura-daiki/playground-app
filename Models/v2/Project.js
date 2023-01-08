@@ -27,7 +27,7 @@ const proto = {
   findFileById(id) {
     return searchFiles(this.files, file => file.id === id);
   },
-  findFileObjFromId(id) {
+  findFileObjById(id) {
     return searchFiles(this.files, f => f.id === id, { type: "all" });
   },
   findParentByFileId(id) {
@@ -45,7 +45,7 @@ const proto = {
     if (parentFolder.type !== "folder") return false;
     const filesIdMap = new Map();
     for (const f of this.files) {
-      filesIdSet.set(f.id, f);
+      filesIdMap.set(f.id, f);
     }
     let next = fobj;
     do{
