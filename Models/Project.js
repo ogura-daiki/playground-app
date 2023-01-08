@@ -92,9 +92,34 @@ const copyProject = (name, baseProject) => {
 
 const initialProjectId = createId();
 
+const deserializer = (name, value) => {
+  const patterns = [
+    (name, value) => ({
+      cond: typeof value !== "object",
+      convert: () => value
+    }),
+    (name, value) => ({
+      cond: typeof value?.entryFile === "string",
+      convert: () => setProto(value, proto),
+    }),
+    (name, value) => ({
+      cond: value.type === "file",
+      convert: () => setProto(value, FileProto),
+    }),
+  ];
+  for (const p of patterns) {
+    const obj = p(name, value);
+    if (obj.cond){
+      return obj.convert();
+    }
+  }
+  return value;
+}
+
 export {
   proto,
   newProject,
   copyProject,
   initialProjectId,
+  deserializer,
 }
