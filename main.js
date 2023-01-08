@@ -1,5 +1,5 @@
 
-import { html, css, when } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
+import { html, css, when, join } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
 import "./elements/MonacoEditor.js";
 import { newProject, copyProject, proto as ProjectProto } from './Models/v2/Project.js';
 import BaseElement from './elements/BaseElement.js';
@@ -169,6 +169,23 @@ const style = css`
     overflow-y:scroll;
   }
   file-tree.root{
+  }
+
+  .openedFilePath{
+    font-size:.7em;
+    overflow-x:auto;
+    gap:8px;
+    padding:4px 16px;
+    place-items:center;
+    user-select:none;
+
+    background:rgb(48,48,48);
+  }
+  .openedFilePath>.part{
+  }
+  .openedFilePath>.joiner{
+    font-family:monospace;
+    font-weight:bold;
   }
 `;
 
@@ -498,9 +515,19 @@ class PlayGroundApp extends BaseElement {
     `;
   }
 
+  /**
+   * 
+   * @param {ProjectProto} project 
+   * @returns 
+   */
   #editor(project){
+    const openFile = project.getOpenedFile();
     return html`
-    <monaco-editor .file=${project.getOpenedFile()} id="input" class="fill" @updateValue=${e => {
+    <div class="openedFilePath row scroll_overlay">${join(
+      project.getFileObjPath(openFile.id).map(p=>html`<span class="part">${p}</span>`),
+      ()=>html`<span class="joiner">&gt;</span>`
+    )}</div>
+    <monaco-editor .file=${openFile} id="input" class="fill grow" @updateValue=${e => {
       const {file, newVal} = e.detail;
       this.updateProjects(() => {
         file.stringValue = newVal;
@@ -534,7 +561,7 @@ class PlayGroundApp extends BaseElement {
           <split-panel id="container" class="fill" count=2 weight_sum=2 weights="[1,1]" min_weights="[0,0]">
             <div slot=0 class="fill col">
               ${this.fileTabs()}
-              <div class="grow code_area">
+              <div class="grow code_area col">
                 ${when(
                   project.opened!=null,
                   ()=>this.#editor(project),
