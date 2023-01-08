@@ -9,13 +9,15 @@ const searchFiles = (files, callback, { type = "file", multiple = false, path = 
         const result = callback(file);
         if (result) {
           value.push({ file, path: path + file.name });
-          return !multiple;
+          if(type === "file"){
+            return !multiple;
+          }
         }
       }
       if (file.type == "folder") {
-        return walk(file.files, path + file.name + "/") && multiple;
+        return walk(file.files, path + file.name + "/");
       }
-    })
+    });
   }
   walk(files, path);
   if (multiple) {
@@ -54,7 +56,10 @@ const proto = {
   },
   procToFiles(callback) {
     searchFiles(this.files, callback, { multiple: true });
-  }
+  },
+  listAllFileObjects() {
+    return searchFiles(this.files, ()=>true, { type:"all", multiple: true }).map(o=>o.file);
+  },
 };
 
 const newProject = (name) => {
