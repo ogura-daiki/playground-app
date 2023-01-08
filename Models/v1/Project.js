@@ -1,5 +1,5 @@
 import { setProto, createId } from "../../libs/ModelUtil.js";
-import { proto as FileProto, newFile } from "./File.js";
+import { FileProto, FolderProto, newFile } from "./File.js";
 
 const searchFiles = (files, callback, { type = "file", multiple = false, path = "" } = {}) => {
   const value = [];
@@ -80,6 +80,9 @@ const copyProject = (name, baseProject) => {
     if(value?.type === "file"){
       return setProto(value, FileProto);
     }
+    else if(value?.type === "folder"){
+      return setProto(value, FolderProto);
+    }
     return value;
   });
   Object.assign(copied, {
@@ -105,6 +108,10 @@ const deserializer = (name, value) => {
     (name, value) => ({
       cond: value.type === "file",
       convert: () => setProto(value, FileProto),
+    }),
+    (name, value) => ({
+      cond: value.type === "folder",
+      convert: () => setProto(value, FolderProto),
     }),
   ];
   for (const p of patterns) {
