@@ -1,5 +1,8 @@
 import { html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
+import { createId } from '../libs/ModelUtil.js';
 import BaseElement from './BaseElement.js';
+
+const dataTransferKey = createId();
 
 class FileTree extends BaseElement {
   static get styles(){
@@ -151,14 +154,14 @@ class FileTree extends BaseElement {
         this.emit("select", this.data);
       }}
       @dragstart=${e=>{
-        e.dataTransfer.setData("text", this.data.id);
+        e.dataTransfer.setData(dataTransferKey, this.data.id);
       }}
       @dragover=${e=>{
         e.preventDefault();
       }}
       @drop=${e=>{
         e.preventDefault();
-        const fileId = e.dataTransfer.getData("text");
+        const fileId = e.dataTransfer.getData(dataTransferKey);
         const toFolder = this.data.type==="folder"?this.data:this.parent;
         this.emit("move", {
           to:toFolder,
