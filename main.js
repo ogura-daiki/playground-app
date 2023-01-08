@@ -325,11 +325,11 @@ class PlayGroundApp extends BaseElement {
         }
         return v1.name === v2.name?0:v1.name < v2.name?-1:1;
       });
-    }
+    };
 
     const onSelect = (file)=>{
       this.openTab(project, file.id);
-    }
+    };
     const onCreate = ({to, name, type})=>{
       if(this.getCurrentProject().hasSameNameInFolder(to, name)){
         alert(`ファイル名：${name}は使用できません。\nこのフォルダ内には既に同様の名称のファイル、またはフォルダが存在します。`);
@@ -339,7 +339,7 @@ class PlayGroundApp extends BaseElement {
         this.getCurrentProject().files.push({ file:newFile, folder:newFolder }[type]({name, parent:to}));
       });
       this.requestUpdate();
-    }
+    };
     const onRename = ({file, name})=>{
       if(project.entryFile === file.id){
         const lang = getLanguageFromFileName(name);
@@ -356,7 +356,7 @@ class PlayGroundApp extends BaseElement {
         file.name = name;
       });
       this.requestUpdate();
-    }
+    };
     const onDelete = ({file})=>{
       if(file.id === project.entryFile){
         alert("初期ファイルは削除できません");
@@ -375,25 +375,43 @@ class PlayGroundApp extends BaseElement {
         });
         this.requestUpdate();
       }
-    }
-    const canMoveTo = (toId, moveId) => {
-      if(toId === undefined) return true;
-      if(toId === moveId) return false;
-      const toFolder = project.findFileObjById(toId);
-      //移動先がない、またはフォルダでない場合移動できない
-      if(!toFolder || toFolder.type !== "folder"){
+    };
+    const checkCanMove = (toId, moveId) => {
+      if(toId === moveId){
         return false;
       }
+      if(toId === undefined) return true;
+
+      const toFolder = project.findFileObjById(toId);
+      //移動先がない、またはフォルダでない場合移動できない
+      if(!toFolder){
+        throw new Error("移動先がプロジェクト内に存在しません");
+      }
+      if(toFolder.type !== "folder"){
+        throw new Error("移動先にフォルダ以外のものが指定されています");
+      }
+
       const moveFileObj = project.findFileObjById(moveId);
-      return (
-        //移動するファイルオブジェクトの子孫に移動先のフォルダが含まれる場合は循環参照になるので移動させない
-        !project.containsFolder(moveId, toId)
-        //移動先に同じ名前のファイルオブジェクトがある場合は移動させない
-        && !project.hasSameNameInFolder(toId, moveFileObj.name)
-      );
+      if(project.hasSameNameInFolder(toId, moveFileObj.name)){
+        throw new Error("移動先のフォルダに同じ名前のファイル、またはフォルダがあるため移動できません");
+      }
+
+      if(moveFileObj.type === "folder" && project.containsFolder(moveId, toId)){
+        throw new Error("移動先のフォルダが移動させようとしているフォルダの中にあるため移動できません");
+      }
+
+      return true;
+
     };
     const onMove = ({to, fileId})=>{
-      if(!canMoveTo(to, fileId)){
+      let canMove = false;
+      try{
+        canMove = checkCanMove(to, fileId);
+      }
+      catch(e){
+        alert(e.message);
+      }
+      if(!canMove){
         return;
       }
       const file = this.getCurrentProject().findFileObjById(fileId);
@@ -401,7 +419,7 @@ class PlayGroundApp extends BaseElement {
         file.parent = to;
       });
       this.requestUpdate();
-    }
+    };
 
     return html`
       <div class="col fill files_area">
@@ -421,7 +439,7 @@ class PlayGroundApp extends BaseElement {
           ></file-tree>
         </div>
       </div>
-    `
+    `;
   }
   openTab(pro, id){
     this.updateProjects(()=>{
