@@ -8,6 +8,7 @@ import { newFile, newFolder } from './Models/File.js';
 import "./elements/Split.js";
 import "./elements/DemoView.js";
 import "./elements/MenuIcon.js";
+import "./elements/ProjectsView.js";
 import { incrementFileNameSuffix } from './libs/incrementFileNameSuffix.js';
 import LocalStorageStore from 'https://ogura-daiki.github.io/store/LocalStorageStore.js';
 import Models from "./Migrations/index.js";
@@ -161,65 +162,6 @@ class PlayGroundApp extends BaseElement {
           border-radius:16px;
         }
 
-        .projects_area{
-          position:absolute;
-          top:0px;
-          left:0px;
-          z-index:99999;
-          background:darkslateblue;
-          color:white;
-        }
-        .projects_area .title{
-          background:inherit;
-          padding:4px;
-          font-size:1.5rem;
-          box-shadow:0px 2px 4px 0px rgba(0,0,0,.2);
-        }
-        .projects_area .title span{
-          padding:0px 16px;
-        }
-        .projects_area .title .append{
-          font-size:inherit;
-          padding:0px 8px;
-        }
-        .projects_area .projects{
-          padding:8px;
-          overflow-y:scroll;
-        }
-        .projects_area .project{
-          border-bottom: 1px solid white;
-          padding:8px;
-        }
-        .projects_area .project.selected{
-          background:rgba(255,255,255,.2);
-        }
-        .projects_area .project .badge{
-          background:white;
-          padding:4px 12px;
-          font-size:.5rem;
-          color:black;
-          display:grid;
-          place-items:center;
-          border-radius:999999vmax;
-          align-self:center;
-          user-select:none;
-        }
-        .projects_area .project .menu_list{
-          gap:4px;
-          padding-left:8px;
-          align-items:center;
-        }
-        .projects_area .project .menu{
-          width:1.5rem;
-          height:1.5rem;
-          font-size:1rem;
-          background:transparent;
-          border-radius:.2rem;
-        }
-        .projects_area .project .menu:hover{
-          background:rgba(255,255,255,.2);
-        }
-        
 
         .file_tabs{
           background:darkslateblue;
@@ -299,14 +241,17 @@ class PlayGroundApp extends BaseElement {
     ];
   }
 
-  #searchProjects(){
-    return this.projects.reduce((c,p,i)=>{if(!this.searchText || p.name.match(this.searchText)){c.push([p,i])}return c;},[]);
+  projectList() {
+    const onSelect = e=>{
+      const {id} = e.detail.project;
+      this.updateCtx(ctx=>{
+        ctx.project = id;
+      });
+      this.requestUpdate();
+      this.renderRoot.querySelector("#demo-view").project = undefined;
     }
-
-  #projectListItem(project, idx){
-    const {id, name} = project;
     const onDelete = e=>{
-      e.stopPropagation();
+      const {id, name} = e.detail.project;
       if(this.ctx.project===id){
         alert("選択中のプロジェクトは削除できません");
         return;
@@ -315,89 +260,51 @@ class PlayGroundApp extends BaseElement {
         return;
       }
       this.updateProjects(projects=>{
-        projects.splice(idx,1);
+        const idx = this.projects.findIndex(p=>p.id === id);
+        if(idx < 0) return;
+        projects.splice(idx, 1);
       });
       this.requestUpdate();
     };
     const onCopy = e=>{
-      e.stopPropagation();
+      const project = e.detail.project;
       this.updateProjects(projects=>{
-        const newName = incrementFileNameSuffix(name, projects.map(p=>p.name));
+        const newName = incrementFileNameSuffix(project.name, projects.map(p=>p.name));
         const copiedProject = copyProject(newName, project);
         projects.push(copiedProject);
       });
       this.requestUpdate();
-    }
-    const menuButton = (icon, click) => html`
-    <i class="centering menu" @click=${click}>${icon}</i>
-    `;
-    return html`
-      <div
-        class="project row ${when(this.ctx.project===id, ()=>"selected")}"
-        @click=${e=>{
-          if(this.ctx.project === id){
-            return;
-          }
-          this.updateCtx(ctx=>{
-            ctx.project = id;
-          });
-          //this.menu_opened = false;
-          this.requestUpdate();
-          this.renderRoot.querySelector("#demo-view").project = undefined;
-        }}
-      >
-        <span class=grow>${name}</span>
-        ${when(this.ctx.project===id, ()=>html`<div class=badge>選択中</div>`)}
-        <div class="row menu_list">
-          ${menuButton("download", async e=>{
+    };
+    const onDownload = async e=>{
+      const project = e.detail.project;
       const html = await generateProjectHTML(project);
       const fileName = project.name+".html";
       const dataURI = binaryString2DataURI(string2BinaryString(html), getMimeTypeFromFileName(fileName));
       downloadDataURI(dataURI, fileName);
-          })}
-          ${menuButton("content_copy", onCopy)}
-          ${menuButton("delete", onDelete)}
-        </div>
-      </div>
-    `;
-  }
+    };
 
-
-  projectList() {
-    const searchedProjects = this.#searchProjects();
-    return html`
-      <div class="fill col projects_area">
-        <div class="title row">
-          <span class=grow>プロジェクト一覧</span>
-          <i class="append centering" @click=${e => {
+    const onCreate = e => {
       this.updateProjects(ps => {
         ps.push(newProject());
       });
       this.requestUpdate();
-          }}>add</i>
-        </div>
-        <div class="row" style="padding:8px;gap:8px;">
-          <span>検索</span>
-          <input type=text class=grow .value=${this.searchText??""} @input=${e=>{
-            this.searchText = e.target.value.trim();
-          }}>
-        </div>
-        <div class="grow col projects scroll_overlay">
-          ${when(
-            !!searchedProjects.length,
-            ()=>searchedProjects.map(sr=>this.#projectListItem(...sr)),
-            ()=>html`
-              <div class="fill centering">
-                <div class="centering">
-                  <i style="font-size:4rem">search</i>
-                  <span>"${this.searchText}"に該当するプロジェクトは存在しません。</span>
-                </div>
-              </div>
-            `
-          )}
-        </div>
-      </div>
-    `
+    };
+
+    return html`
+      <view-projects
+        class="fill"
+
+        .projects=${this.projects}
+        .selection=${this.ctx.project}
+
+        @deleteProject=${onDelete}
+        @copyProject=${onCopy}
+        @downloadProject=${onDownload}
+        @selectProject=${onSelect}
+
+        @createProject=${onCreate}
+      ></view-projects>
+    `;
   }
   fileList() {
     const project = this.getCurrentProject();
@@ -652,6 +559,7 @@ class PlayGroundApp extends BaseElement {
 
   updateProjects(func) {
     func(this.projects);
+    this.projects = [...this.projects];
     store.set("projects", this.projects);
   }
 
