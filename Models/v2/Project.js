@@ -77,6 +77,33 @@ const proto = {
   listAllFileObjects() {
     return [...this.files];
   },
+
+  checkCanMove(toId, moveId){
+    if(toId === moveId){
+      return false;
+    }
+    if(toId === undefined) return true;
+
+    const toFolder = this.findFileObjById(toId);
+    //移動先がない、またはフォルダでない場合移動できない
+    if(!toFolder){
+      throw new Error("移動先がプロジェクト内に存在しません");
+    }
+    if(toFolder.type !== "folder"){
+      throw new Error("移動先にフォルダ以外のものが指定されています");
+    }
+
+    const moveFileObj = this.findFileObjById(moveId);
+    if(this.hasSameNameInFolder(toId, moveFileObj.name)){
+      throw new Error("移動先のフォルダに同じ名前のファイル、またはフォルダがあるため移動できません");
+    }
+
+    if(moveFileObj.type === "folder" && this.containsFolder(moveId, toId)){
+      throw new Error("移動先のフォルダが移動させようとしているフォルダの中にあるため移動できません");
+    }
+
+    return true;
+  },
 };
 
 const newProject = (name) => {

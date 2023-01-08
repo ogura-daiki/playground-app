@@ -1,7 +1,7 @@
 
 import { html, css, when } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
 import "./elements/MonacoEditor.js";
-import { newProject, copyProject } from './Models/v2/Project.js';
+import { newProject, copyProject, proto as ProjectProto } from './Models/v2/Project.js';
 import BaseElement from './elements/BaseElement.js';
 import "./elements/FileTree.js";
 import { newFile, newFolder } from './Models/v2/File.js';
@@ -317,7 +317,7 @@ class PlayGroundApp extends BaseElement {
   }
   fileList() {
     const project = this.getCurrentProject();
-
+    
     const sortFiles = files=>{
       files.sort((v1, v2)=>{
         if(v1.type !== v2.type){
@@ -376,37 +376,10 @@ class PlayGroundApp extends BaseElement {
         this.requestUpdate();
       }
     };
-    const checkCanMove = (toId, moveId) => {
-      if(toId === moveId){
-        return false;
-      }
-      if(toId === undefined) return true;
-
-      const toFolder = project.findFileObjById(toId);
-      //移動先がない、またはフォルダでない場合移動できない
-      if(!toFolder){
-        throw new Error("移動先がプロジェクト内に存在しません");
-      }
-      if(toFolder.type !== "folder"){
-        throw new Error("移動先にフォルダ以外のものが指定されています");
-      }
-
-      const moveFileObj = project.findFileObjById(moveId);
-      if(project.hasSameNameInFolder(toId, moveFileObj.name)){
-        throw new Error("移動先のフォルダに同じ名前のファイル、またはフォルダがあるため移動できません");
-      }
-
-      if(moveFileObj.type === "folder" && project.containsFolder(moveId, toId)){
-        throw new Error("移動先のフォルダが移動させようとしているフォルダの中にあるため移動できません");
-      }
-
-      return true;
-
-    };
     const onMove = ({to, fileId})=>{
       let canMove = false;
       try{
-        canMove = checkCanMove(to, fileId);
+        canMove = project.checkCanMove(to, fileId);
       }
       catch(e){
         alert(e.message);
@@ -414,7 +387,7 @@ class PlayGroundApp extends BaseElement {
       if(!canMove){
         return;
       }
-      const file = this.getCurrentProject().findFileObjById(fileId);
+      const file = project.findFileObjById(fileId);
       this.updateProjects(()=>{
         file.parent = to;
       });
@@ -495,6 +468,10 @@ class PlayGroundApp extends BaseElement {
     `;
   }
 
+  /**
+   * 選択中のプロジェクトを取得する
+   * @returns {ProjectProto}
+   */
   getCurrentProject() {
     let pro = this.projects.find(({ id }) => id === this.ctx.project);
     if(pro){
