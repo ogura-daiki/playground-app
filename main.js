@@ -357,6 +357,7 @@ class PlayGroundApp extends BaseElement {
       }
       this.updateProjects(()=>{
         file.name = name;
+        sortFiles(files);
       });
       this.requestUpdate();
     }
