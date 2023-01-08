@@ -358,12 +358,12 @@ class PlayGroundApp extends BaseElement {
       });
       this.requestUpdate();
     }
-    const onDelete = ({files,file})=>{
+    const onDelete = ({file})=>{
       if(file.id === project.entryFile){
         alert("初期ファイルは削除できません");
         return;
       }
-      if(file.type==="folder" && project.hasEntryFile(file)){
+      if(file.type==="folder" && project.contains(file.id, project.entryFile)){
         alert("フォルダ内に初期ファイルが含まれているので削除できません");
         return;
       }
@@ -372,7 +372,7 @@ class PlayGroundApp extends BaseElement {
           if(project.tabs.includes(file.id)){
             this.closeTab(project, file.id);
           }
-          files.splice(files.findIndex(v=>v===file),1);
+          project.files.splice(project.files.findIndex(v=>v===file),1);
         });
         this.requestUpdate();
       }
