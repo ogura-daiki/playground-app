@@ -449,7 +449,7 @@ class PlayGroundApp extends BaseElement {
         @click=${e => { this.files_opened = !this.files_opened }}
       ><i>file_copy</i></button>
       <div class="tab_list row scroll_overlay">
-      ${pro.tabs.map((id) => console.log(id)||html`
+      ${pro.tabs.map((id) => html`
         <div class="row file_tab ${when(id===pro.opened,()=>"open")}"
           @click=${e=>this.selectTab(pro, id)}
         >
