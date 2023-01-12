@@ -119,6 +119,20 @@ const proto = {
 
     return true;
   },
+
+  deleteFile(file){
+    const idx = this.files.findIndex(f=>f.id === file.id);
+    if(idx < 0) {
+      throw new Error(`指定のファイル（ID：${file.id}）がプロジェクト内にありません`);
+    }
+    let list = [file];
+    this.files.splice(idx, 1);
+    if(file.type === "folder"){
+      const children = this.findChildren(file, "all");
+      list = children.map(f=>this.deleteFile(f)).flat(Infinity);
+    }
+    return list;
+  }
 };
 
 const newProject = (name) => {

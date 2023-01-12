@@ -376,10 +376,9 @@ class PlayGroundApp extends BaseElement {
       }
       if(confirm(`${file.typeString}名：${file.name}を削除してもよろしいですか？`)){
         this.updateProjects(()=>{
-          if(project.tabs.includes(file.id)){
-            this.closeTab(project, file.id);
-          }
-          project.files.splice(project.files.findIndex(v=>v===file),1);
+          const pro = this.getCurrentProject();
+          const list = pro.deleteFile(file);
+          list.forEach(f => this.closeTab(pro, f.id));
         });
         this.requestUpdate();
       }
