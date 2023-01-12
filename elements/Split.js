@@ -1,5 +1,42 @@
 import { LitElement, html, css, join } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
 
+
+const style = css`
+:host{
+  display:block;
+}
+
+#container{
+  width:100%;
+  height:100%;
+  display:flex;
+  align-items:stretch;
+}
+#container.v{
+  flex-direction:column;
+}
+#container.h{
+  flex-direction:row;
+}
+
+.knob{
+  background:rgba(99,99,99,.2);
+  border:solid rgba(50,50,50,.2) 1px;
+  user-select:none;
+  box-sizing:border-box;
+}
+.knob.h{
+  width:8px;
+  height:max(100%,8px);
+  cursor:col-resize;
+}
+.knob.v{
+  height:8px;
+  width:max(100%,8px);
+  cursor:row-resize;
+}
+`;
+
 class EventListenerManager {
     #list = [];
     #element;
@@ -22,6 +59,11 @@ class EventListenerManager {
 }
 
 class Split extends LitElement {
+
+  static get styles() {
+    return style;
+  }
+
   static get properties() {
     return {
       vertical: { type: Boolean },
@@ -53,7 +95,7 @@ class Split extends LitElement {
     this.weights = [0.5, 0.5];
     this.min_weights = [0.15, 0.15];
     this.currentWeight = [];
-    this.knob_overflow = true;
+    this.knob_overflow = false;
 
     this.#eventManager = new EventListenerManager(this);
     this.#eventManager.register("mousemove", e => {
@@ -126,63 +168,26 @@ class Split extends LitElement {
   render() {
     this.#updateCurrentWeightIfNeeded();
     return html`
-    <style>
-      :host{
-        cursor:${this.md != null ? (this.vertical ? "row-resize" : "col-resize") : ""};
-      }
-    </style>
-    <div id=container class="${this.vertical?"v":"h"}">
-    ${join(
-      this.currentWeight.map((weight, i) => html`
-        <slot
-        name="${i}"
-        style="
-            ${this.md != null ? "user-select:none;pointer-events:none;" : ""}
-            ${this.vertical ? "height" : "width"}:${weight * 100}%;
-            display:block;
-        "
-        >${i}</slot>
-      `),
-      i=>this.createKnob(i),
-    )}
-    </div>
-`;
-  }
-  static get styles() {
-    return css`
-      :host{
-        display:block;
-      }
-      
-      #container{
-        width:100%;
-        height:100%;
-        display:flex;
-        align-items:stretch;
-      }
-      #container.v{
-        flex-direction:column;
-      }
-      #container.h{
-        flex-direction:row;
-      }
-
-      .knob{
-        background:rgba(99,99,99,.2);
-        border:solid rgba(50,50,50,.2) 1px;
-        user-select:none;
-        box-sizing:border-box;
-      }
-      .knob.h{
-        width:8px;
-        height:max(100%,8px);
-        cursor:col-resize;
-      }
-      .knob.v{
-        height:8px;
-        width:max(100%,8px);
-        cursor:row-resize;
-      }
+      <style>
+        :host{
+          cursor:${this.md != null ? (this.vertical ? "row-resize" : "col-resize") : ""};
+        }
+      </style>
+      <div id=container class="${this.vertical?"v":"h"}">
+      ${join(
+        this.currentWeight.map((weight, i) => html`
+          <slot
+          name="${i}"
+          style="
+              ${this.md != null ? "user-select:none;pointer-events:none;" : ""}
+              ${this.vertical ? "height" : "width"}:${weight * 100}%;
+              display:block;
+          "
+          >${i}</slot>
+        `),
+        i=>this.createKnob(i),
+      )}
+      </div>
     `;
   }
 }
