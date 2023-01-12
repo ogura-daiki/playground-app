@@ -1,4 +1,25 @@
-import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
+import { LitElement, html, css, join } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
+
+class EventListenerManager {
+    #list = [];
+    #element;
+    constructor(element){
+        this.#element = element;
+    }
+    register(...a){
+        this.#list.push(a);
+    }
+    assignAll(){
+        for(const args of this.#list){
+            this.#element.addEventListener(...args);
+        }
+    }
+    removeAll(){
+        for(const args of this.#list){
+            this.#element.removeEventListener(...args);
+        }
+    }
+}
 
 class Split extends LitElement {
   static get properties() {
@@ -12,56 +33,78 @@ class Split extends LitElement {
       md: { state: true },
     };
   }
-  updateCurrentWeight(val) {
+
+  #beforeHash;
+  #updateCurrentWeightIfNeeded() {
+    const hash = JSON.stringify({count:this.count, weights:this.weights, weight_sum:this.weight_sum, min_weights:this.min_weights});
+    if(this.#beforeHash === hash){
+        return;
+    }
+    this.#beforeHash = hash;
     this.currentWeight = this.weights.map(v => v / this.weight_sum);
   }
+
+  #eventManager;
   constructor() {
     super();
     this.vertical = false;
-    this.count = 5;
+    this.count = 2;
     this.weight_sum = 1;
-    this.weights = [0.1, 0.2, 0.2, 0.2, 0.3];
-    this.min_weights = [0.05, 0.05, 0.05, 0.05, 0.05];
+    this.weights = [0.5, 0.5];
+    this.min_weights = [0.15, 0.15];
     this.currentWeight = [];
-    this.knob_overflow = false;
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    window.addEventListener("mousemove", e => {
+    this.knob_overflow = true;
+
+    this.#eventManager = new EventListenerManager(this);
+    this.#eventManager.register("mousemove", e => {
       if (this.md !== null) {
         let move = e.movementX / this.offsetWidth;
         if (this.vertical) {
           move = e.movementY / this.offsetHeight;
         }
         if (move < 0) {
-          if (this.currentWeight[this.md] + move < this.min_weights[this.md]) {
-            move = (this.min_weights[this.md] - this.currentWeight[this.md]) / this.weight_sum;
+          move = Math.abs(move);
+          const minWidth = this.min_weights[this.md]/this.weight_sum;
+          if (this.currentWeight[this.md] - move < minWidth) {
+            move = (this.currentWeight[this.md] - minWidth) / this.weight_sum;
           }
-          this.currentWeight[this.md] += move;
-          this.currentWeight[this.md + 1] -= move;
+          move = -move;
         }
         else {
-          if (this.currentWeight[this.md + 1] - move < this.min_weights[this.md + 1]) {
-            move = (this.currentWeight[this.md + 1] - this.min_weights[this.md + 1]) / this.weight_sum;
+          const minWidth = this.min_weights[this.md + 1]/this.weight_sum;
+          if (this.currentWeight[this.md + 1] - move < minWidth) {
+            move = (this.currentWeight[this.md + 1] - minWidth) / this.weight_sum;
           }
-          this.currentWeight[this.md] += move;
-          this.currentWeight[this.md + 1] -= move;
         }
+        this.currentWeight[this.md] += move;
+        this.currentWeight[this.md + 1] -= move;
         this.requestUpdate();
       }
     });
-    window.addEventListener("mouseup", e => {
+    this.#eventManager.register("mouseup", e => {
       this.md = null;
     });
   }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.#eventManager.assignAll();
+  }
+  disconnectedCallback(){
+    super.disconnectedCallback();
+    this.#eventManager.removeAll();
+  }
+
   createKnob(i) {
-    const knob = html`
-      <div class="knob ${this.vertical ? "v" : "h"}"
-      @mousedown=${e => {
-        this.md = i;
-      }}></div>
-    `;
-    if (this.knob_overflow) {
+    if(!this.knob_overflow){
+      return html`
+        <div class="knob ${this.vertical ? "v" : "h"}"
+        @mousedown=${e => {
+          this.md = i;
+        }}></div>
+      `;
+    }
+    else {
       return html`
         <div style="
           overflow:visible;
@@ -79,37 +122,29 @@ class Split extends LitElement {
         </div>
       `;
     }
-    else {
-      return knob;
-    }
   }
   render() {
-    if (this.currentWeight.length !== this.count) {
-      this.updateCurrentWeight(this.count);
-    }
+    this.#updateCurrentWeightIfNeeded();
     return html`
     <style>
       :host{
         cursor:${this.md != null ? (this.vertical ? "row-resize" : "col-resize") : ""};
       }
     </style>
-    <div style="width:100%;height:100%;display:flex;align-items:stretch;flex-direction:${this.vertical ? "column" : "row"};">
-    ${[...Array(this.count)].map((v, i) => html`
-      <slot
+    <div id=container class="${this.vertical?"v":"h"}">
+    ${join(
+      this.currentWeight.map((weight, i) => html`
+        <slot
         name="${i}"
         style="
-          ${this.md != null ? "user-select:none;pointer-events:none;" : ""}
-          ${this.vertical ? "height" : "width"}:${this.currentWeight[i] * 100}%;
-          display:block;
+            ${this.md != null ? "user-select:none;pointer-events:none;" : ""}
+            ${this.vertical ? "height" : "width"}:${weight * 100}%;
+            display:block;
         "
-      >${i}</slot>
-    `).reduce((c, v, i) => {
-      c.push(v);
-      if (i + 1 < this.count) {
-        c.push(this.createKnob(i));
-      }
-      return c;
-    }, [])}
+        >${i}</slot>
+      `),
+      i=>this.createKnob(i),
+    )}
     </div>
 `;
   }
@@ -118,22 +153,34 @@ class Split extends LitElement {
       :host{
         display:block;
       }
-      .knob.h{
+      
+      #container{
+        width:100%;
+        height:100%;
+        display:flex;
+        align-items:stretch;
+      }
+      #container.v{
+        flex-direction:column;
+      }
+      #container.h{
+        flex-direction:row;
+      }
+
+      .knob{
         background:rgba(99,99,99,.2);
-        width:8px;
-        height:max(100%,8px);
         border:solid rgba(50,50,50,.2) 1px;
         user-select:none;
         box-sizing:border-box;
+      }
+      .knob.h{
+        width:8px;
+        height:max(100%,8px);
         cursor:col-resize;
       }
       .knob.v{
-        background:rgba(99,99,99,.2);
         height:8px;
         width:max(100%,8px);
-        border:solid rgba(50,50,50,.2) 1px;
-        user-select:none;
-        box-sizing:border-box;
         cursor:row-resize;
       }
     `;
