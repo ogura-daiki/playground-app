@@ -38,24 +38,24 @@ const style = css`
 `;
 
 class EventListenerManager {
-    #list = [];
-    #element;
-    constructor(element){
-        this.#element = element;
+  #list = [];
+  #element;
+  constructor(element){
+    this.#element = element;
+  }
+  register(...a){
+    this.#list.push(a);
+  }
+  assignAll(){
+    for(const args of this.#list){
+      this.#element.addEventListener(...args);
     }
-    register(...a){
-        this.#list.push(a);
+  }
+  removeAll(){
+    for(const args of this.#list){
+      this.#element.removeEventListener(...args);
     }
-    assignAll(){
-        for(const args of this.#list){
-            this.#element.addEventListener(...args);
-        }
-    }
-    removeAll(){
-        for(const args of this.#list){
-            this.#element.removeEventListener(...args);
-        }
-    }
+  }
 }
 
 class Split extends LitElement {
