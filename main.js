@@ -95,8 +95,13 @@ const style = css`
     border-radius:16px;
   }
 
+  .bottomMenu{
+    overflow:hidden;
+  }
+
 
   .file_tabs{
+    overflow:hidden;
     background:darkslateblue;
   }
 
@@ -171,9 +176,12 @@ const style = css`
   file-tree.root{
   }
 
+  .filePathWrapper{
+    overflow-x:auto;
+  }
   .openedFilePath{
     font-size:.7em;
-    overflow-x:auto;
+    /*overflow-x:auto;*/
     gap:8px;
     padding:4px 16px;
     place-items:center;
@@ -513,10 +521,12 @@ class PlayGroundApp extends BaseElement {
   #editor(project){
     const openFile = project.getOpenedFile();
     return html`
-    <div class="openedFilePath row scroll_overlay">${join(
-      project.getFileObjPath(openFile.id).map(p=>html`<span class="part">${p}</span>`),
-      ()=>html`<span class="joiner">&gt;</span>`
-    )}</div>
+    <div class="filePathWrapper scroll_overlay">
+      <div class="openedFilePath row">${join(
+        project.getFileObjPath(openFile.id).map(p=>html`<span class="part">${p}</span>`),
+        ()=>html`<span class="joiner">&gt;</span>`
+      )}</div>
+    </div>
     <monaco-editor .file=${openFile} id="input" class="fill grow" @updateValue=${e => {
       const {file, newVal} = e.detail;
       this.updateProjects(() => {
@@ -559,7 +569,7 @@ class PlayGroundApp extends BaseElement {
                 )}
                 ${when(this.files_opened, ()=>this.fileList())}
               </div>
-              <div>
+              <div class="bottomMenu">
                 <label>自動反映<input type="checkbox" .checked=${this.config.auto_refresh} @input=${e => {
                   this.updateConfig(config => {
                     config.auto_refresh = e.target.checked
