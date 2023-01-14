@@ -43,6 +43,9 @@ class MonacoEditor extends HTMLElement{
         width:100%;
         height:100%;
       }
+      .monaco-editor, .monaco-editor .overflow-guard{
+        width:100% !important;
+      }
     `;
   }
   render(){
