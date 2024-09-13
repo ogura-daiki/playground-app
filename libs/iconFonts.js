@@ -1,11 +1,13 @@
-import { css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
+import { css, unsafeCSS } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/all/lit-all.min.js';
 import make from './make.js';
+
+const fontFile = await fetch("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200").then(e=>e.text());
 
 const iconFonts = css`
 /**
 * アイコンフォント定義
 */
-@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200");
+${unsafeCSS(fontFile)}
 /* クラス指定が長いので iタグで代替 */
 i {
   font-family: 'Material Symbols Outlined';
