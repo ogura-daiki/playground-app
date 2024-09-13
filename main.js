@@ -164,6 +164,8 @@ const style = css`
     -webkit-backdrop-filter: blur( 2px );
     border: 1px solid rgba( 255, 255, 255, 0.18 );
     color:white;
+    /* エディタのミニマップより上側に表示されるように調整 */
+    z-index:9999;
   }
   .files_area .title{
     font-size:1.5rem;
