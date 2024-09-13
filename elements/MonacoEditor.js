@@ -14,6 +14,7 @@ const proxy = URL.createObjectURL(new Blob([`
 `], { type: 'text/javascript' }));
 window.MonacoEnvironment = { getWorkerUrl: () => proxy };
 await new Promise(resolve=>{require(["vs/editor/editor.main"], resolve)});
+const monacoCSS = await fetch("https://unpkg.com/monaco-editor@latest/min/vs/editor/editor.main.css").then(e=>e.text());
 
 class MonacoEditor extends HTMLElement{
   #file={};
@@ -23,7 +24,7 @@ class MonacoEditor extends HTMLElement{
     this.theme="vs-dark";
     this.attachShadow({mode:"open"});
     this.shadowRoot.innerHTML=`
-    <style>${this.constructor.styles}</style>
+    <style>${this.constructor.styles+monacoCSS}</style>
     ${this.render()}
     `;
   }
@@ -50,7 +51,6 @@ class MonacoEditor extends HTMLElement{
   }
   render(){
     return `
-    <link rel="stylesheet" href="https://unpkg.com/monaco-editor@0.34.0/min/vs/editor/editor.main.css"></link>
     <div id=editor></div>
     `
   }
